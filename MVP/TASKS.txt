@@ -1,0 +1,134 @@
+STROKE DETECTION WEB APP — TASK BREAKDOWN (REVISED FOR 3-PERSON TEAM)
+Tech Stack: Flutter PWA | Firebase | TensorFlow.js | Python (Offline Training) | Claude/GPT API
+==========================================================================
+Timeline: 7-8 weeks
+Owner tags: [YOU] [TEAMMATE A] [TEAMMATE B] [TEAM]
+==========================================================================
+NOTE: Grad-CAM heatmap has been moved to the future roadmap. The LLM explanation
+layer covers the "why" factor sufficiently for the MVP. The Flutter frontend is
+the primary ownership area for both teammates.
+==========================================================================
+
+
+SECTION 1: PROJECT SETUP & PLANNING  |  Week 1
+  [ ] 1.1 [CRITICAL] Initialize Git repo; set up main and dev branches; create /frontend, /model, /data folder structure | [YOU] | Difficulty: Easy | Priority: High
+  [ ] 1.2 Write README.md with project overview, tech stack, setup instructions, and team roles | [TEAM] | Difficulty: Easy | Priority: High
+  [ ] 1.3 Create shared project board (GitHub Projects or Trello); assign sections to owners | [TEAM] | Difficulty: Easy | Priority: High
+  [ ] 1.4 Draft medical disclaimer language; get team sign-off; this text will appear in the app and in documentation | [TEAM] | Difficulty: Easy | Priority: High
+  [ ] 1.5 Store Firebase config keys and LLM API key in a .env file; add .env to .gitignore; share keys securely | [YOU] | Difficulty: Easy | Priority: High
+
+
+SECTION 2: DATA COLLECTION & PREPROCESSING  |  Week 1-2
+  [ ] 2.1 [CRITICAL] Download RSNA Brain CT Hemorrhage dataset from Kaggle and a no-stroke CT set; document sources in DATA_SOURCES.md | [YOU] | Difficulty: Medium | Priority: High
+  [ ] 2.2 Audit class distribution across hemorrhagic and no-stroke categories; note imbalance ratios | [YOU] | Difficulty: Easy | Priority: High (depends on: 2.1)
+  [ ] 2.3 [CRITICAL] Write preprocess.py: convert images to 224x224 PNG, normalize pixel values to [0,1], split into /data/train, /data/val, /data/test at 70/15/15 | [YOU] | Difficulty: Medium | Priority: High (depends on: 2.1)
+  [ ] 2.4 Add basic augmentation to preprocess.py: horizontal flips, rotations up to 15 degrees, brightness jitter | [YOU] | Difficulty: Medium | Priority: Medium (depends on: 2.3)
+
+
+SECTION 3: MODEL DEVELOPMENT & EVALUATION  |  Week 2-3
+  [ ] 3.1 [CRITICAL] Implement transfer learning in train.py using EfficientNetB0 pretrained on ImageNet; custom head: GlobalAveragePooling -> Dense(128, relu) -> Dropout(0.4) -> Dense(3, softmax) | [YOU] | Difficulty: Medium | Priority: High (depends on: 2.3)
+  [ ] 3.2 Configure training: Adam (lr=1e-4), categorical_crossentropy, accuracy + AUC metrics; EarlyStopping (patience=8) and ModelCheckpoint callbacks | [YOU] | Difficulty: Easy | Priority: High (depends on: 3.1)
+  [ ] 3.3 Train for up to 30 epochs with class_weight to handle imbalance; save best model as saved_model/ and model.h5 | [YOU] | Difficulty: Medium | Priority: High (depends on: 3.2)
+  [ ] 3.4 Fine-tune: unfreeze top 20 EfficientNetB0 layers, reduce lr to 1e-5, retrain 10 more epochs | [YOU] | Difficulty: Medium | Priority: High (depends on: 3.3)
+  [ ] 3.5 [CRITICAL] Evaluate on test set; generate confusion matrix and per-class F1/precision/recall; save plots to /results/; write 1-page EVALUATION.md summary | [YOU] | Difficulty: Easy | Priority: High (depends on: 3.4)
+
+
+SECTION 4: MODEL CONVERSION FOR TENSORFLOW.JS  |  Week 3
+  [ ] 4.1 [CRITICAL] Convert saved_model/ to TF.js format using tensorflowjs_converter CLI; output to /tfjs_model/ | [YOU] | Difficulty: Medium | Priority: High (depends on: 3.3)
+  [ ] 4.2 Write a quick Node.js validation script: load the converted model, pass a sample image tensor, confirm output probabilities roughly match Python model | [YOU] | Difficulty: Medium | Priority: High (depends on: 4.1)
+  [ ] 4.3 Upload /tfjs_model/ (model.json + weight shards) to Firebase Storage under /models/; record the public download URL | [YOU] | Difficulty: Easy | Priority: High (depends on: 4.2)
+
+
+SECTION 5: ML RESULTS DICTIONARY & LLM EXPLANATION LAYER  |  Week 4-5
+  [ ] 5.1 [CRITICAL] Define results dictionary schema in results_schema.md; required fields:
+        - predicted_class (str): "ischemic_stroke" | "hemorrhagic_stroke" | "no_stroke"
+        - confidence (float): softmax probability of predicted class, e.g. 0.87
+        - confidence_tier (str): "Low" (<0.60) | "Moderate" (0.60-0.80) | "High" (>0.80)
+        - all_class_scores (dict): { "ischemic_stroke": float, "hemorrhagic_stroke": float, "no_stroke": float }
+        - input_quality_warning (str | null): e.g. "Image may be too low resolution" or null
+        - disclaimer (str): hardcoded — "This result is not a medical diagnosis."
+        | [YOU] | Difficulty: Easy | Priority: High
+
+  [ ] 5.2 [CRITICAL] After TF.js inference runs, assemble the results dictionary as a JS object matching the schema above | [YOU] | Difficulty: Medium | Priority: High (depends on: 5.1, 6.3)
+
+  [ ] 5.3 [CRITICAL] Write explain_results.js: serialize results dict to JSON, inject into the prompt below, call Claude API (claude-sonnet-4-6) or GPT-4o:
+        Prompt: "You are a helpful medical information assistant. A stroke detection model analyzed
+        a brain scan and produced these results: {JSON.stringify(results_dict)}.
+        In 3-4 sentences, explain what these results mean for a non-medical audience.
+        Do not diagnose. Do not recommend specific treatments.
+        End with a recommendation to consult a licensed medical professional."
+        | [YOU] | Difficulty: Medium | Priority: High (depends on: 5.2)
+
+  [ ] 5.4 Display LLM explanation text on the Analysis results page below the confidence score; label it "AI-Generated Summary" | [TEAMMATE A] | Difficulty: Easy | Priority: High (depends on: 5.3, 6.4)
+
+  [ ] 5.5 Add disclaimer beneath the AI summary: "This explanation was generated by an AI language model and does not constitute medical advice. Always consult a qualified healthcare provider." | [TEAMMATE A] | Difficulty: Easy | Priority: High (depends on: 5.4)
+
+  [ ] 5.6 If the LLM API call fails or times out, show a static fallback: "The model predicted [class] with [X]% confidence. Please consult a doctor for further evaluation." | [YOU] | Difficulty: Easy | Priority: Medium (depends on: 5.3)
+
+  [ ] 5.7 Log each results dictionary (no image data) to a Firestore collection called inference_logs with a timestamp and session ID | [YOU] | Difficulty: Easy | Priority: Medium (depends on: 5.2)
+
+
+SECTION 6: FIREBASE BACKEND  |  Week 3-4
+  [ ] 6.1 [CRITICAL] Create Firebase project; enable Firestore, Firebase Storage, and Firebase Hosting from the console | [TEAMMATE B] | Difficulty: Easy | Priority: High
+  [ ] 6.2 [CRITICAL] Add firebase_core, cloud_firestore, firebase_storage packages to Flutter project; initialize Firebase in main.dart using .env config | [YOU] | Difficulty: Medium | Priority: High (depends on: 6.1)
+  [ ] 6.3 Write feedback_service.dart: submit feedback documents (rating, comment, timestamp, sessionId) to Firestore feedback collection | [TEAMMATE B] | Difficulty: Easy | Priority: Medium (depends on: 6.2)
+  [ ] 6.4 Set Firebase Storage and Firestore security rules: unauthenticated writes allowed to /uploads/, feedback, and inference_logs; no public reads | [YOU] | Difficulty: Easy | Priority: High (depends on: 6.1)
+
+
+SECTION 7: FRONTEND DEVELOPMENT (FLUTTER PWA)  |  Week 3-5
+  [ ] 7.1 [CRITICAL] Initialize Flutter web project; configure web/manifest.json for PWA (name, icons, display: standalone) | [YOU] | Difficulty: Easy | Priority: High
+  [ ] 7.2 [CRITICAL] Set up routing with go_router: three routes — Home (/), Analysis (/analyze), Feedback (/feedback) | [YOU] | Difficulty: Medium | Priority: High (depends on: 7.1)
+  [ ] 7.3 Define app theme: color palette, font sizes, button styles, card styles — create theme.dart; use Google Fonts | [TEAMMATE A] | Difficulty: Easy | Priority: High (depends on: 7.1)
+  [ ] 7.4 Build Home page: app name, mission statement paragraph, three stroke type explainer cards, and a CTA button to /analyze | [TEAMMATE A] | Difficulty: Medium | Priority: High (depends on: 7.2)
+  [ ] 7.5 Build Analysis page — Upload section: file picker accepting .jpg and .png; image preview widget; reject files over 10MB with an error message | [TEAMMATE B] | Difficulty: Medium | Priority: High (depends on: 7.2)
+  [ ] 7.6 Build Analysis page — Results section: predicted class label with colored badge, confidence percentage display, AI summary text block (from Section 5), and disclaimer notice | [TEAMMATE A] | Difficulty: Medium | Priority: High (depends on: 7.5, 5.4)
+  [ ] 7.7 Build Feedback page: 1-5 star rating widget, open text comment field, submit button wired to feedback_service.dart | [TEAMMATE B] | Difficulty: Medium | Priority: Medium (depends on: 6.3)
+  [ ] 7.8 Add medical disclaimer modal on first visit to /analyze: warning icon, disclaimer text, "I Understand" button required to proceed | [TEAMMATE B] | Difficulty: Easy | Priority: High (depends on: 7.5)
+  [ ] 7.9 Add loading spinner during inference and LLM call; disable the upload/submit button while processing is in progress | [TEAMMATE A] | Difficulty: Easy | Priority: High (depends on: 7.6)
+
+
+SECTION 8: ML INFERENCE INTEGRATION (TENSORFLOW.JS)  |  Week 4-5
+  [ ] 8.1 [CRITICAL] Write tfjs_inference.js: load model from Firebase Storage URL via tf.loadGraphModel(); preprocess uploaded image to [1,224,224,3] float32 tensor; run model.predict(); return softmax score array | [YOU] | Difficulty: Hard | Priority: High (depends on: 4.3, 7.5)
+  [ ] 8.2 [CRITICAL] Wire TF.js inference output back to Flutter via Dart JS interop (js package); parse result into a Dart map; pass to results dictionary assembly (Section 5) | [YOU] | Difficulty: Hard | Priority: High (depends on: 8.1, 5.2)
+        RISK NOTE: If Dart-JS interop proves too unstable, fallback plan is to rewrite the
+        Analysis page as a plain HTML/JS page embedded in the Flutter app via a WebView,
+        which communicates results back via postMessage. Decide by end of Week 4.
+  [ ] 8.3 Warm up the model on Analysis page load by running a blank tensor through it; reduces first-inference latency for the user | [YOU] | Difficulty: Easy | Priority: Medium (depends on: 8.1)
+
+
+SECTION 9: TESTING & DEPLOYMENT  |  Week 6-7
+  [ ] 9.1 Test file upload edge cases: oversized file, wrong format (.pdf), corrupt image — verify correct error messages appear | [TEAMMATE B] | Difficulty: Easy | Priority: High (depends on: 7.5)
+  [ ] 9.2 Test inference end-to-end with at least one sample scan per class; confirm correct label and plausible confidence score | [YOU] | Difficulty: Medium | Priority: High (depends on: 8.2)
+  [ ] 9.3 Test LLM explanation: verify output text is coherent and disclaimer is present; test fallback message when API key is invalid or network is down | [YOU] | Difficulty: Easy | Priority: High (depends on: 5.3)
+  [ ] 9.4 Test feedback form submission end-to-end; confirm document appears in Firestore console | [TEAMMATE B] | Difficulty: Easy | Priority: Medium (depends on: 7.7)
+  [ ] 9.5 [CRITICAL] Run flutter build web --release; deploy to Firebase Hosting with firebase deploy --only hosting | [YOU] | Difficulty: Easy | Priority: High
+  [ ] 9.6 Post-deployment smoke test on live URL: upload scan, view results and AI summary, submit feedback | [TEAM] | Difficulty: Easy | Priority: High (depends on: 9.5)
+
+
+SECTION 10: FUTURE FEATURE ROADMAP (DEFERRED — DO NOT ATTEMPT IN MVP)
+  [ ] 10.1 Grad-CAM heatmap overlay on scan results (dropped from MVP due to complexity and time risk)
+  [ ] 10.2 Patient dashboard with scan history and Firebase Auth login
+  [ ] 10.3 Lesion segmentation using a U-Net model
+  [ ] 10.4 Downloadable PDF report of inference results
+  [ ] 10.5 HIPAA-compliant data handling and encryption
+  [ ] 10.6 Advanced stroke subtype classification (LVO, lacunar, TIA)
+
+
+==========================================================================
+SUGGESTED WEEKLY SPRINT PLAN
+
+  Week 1:   Sections 1 + 2            You: repo + data pipeline | Teammates: README, board, disclaimer
+  Week 2:   Section 3 (first half)    You: model training | Teammates: start Flutter theme + Home page
+  Week 3:   Section 3 (finish) + 4    You: eval + TF.js conversion | Teammates: Analysis upload UI + Firebase setup
+  Week 4:   Sections 5 + 6            You: results dict + LLM call + Firebase rules | Teammates: Results UI + Feedback page
+  Week 5:   Section 8                 You: TF.js inference bridge (highest risk week) | Teammates: polish UI, disclaimer modal, loading states
+  Week 6:   Section 9                 Full team testing + deployment
+  Week 7:   Buffer                    Bug fixes, demo prep, documentation cleanup
+
+==========================================================================
+CRITICAL PATH: 1.1 -> 2.1 -> 2.3 -> 3.1 -> 3.5 -> 4.1 -> 5.1 -> 5.2 -> 5.3 -> 8.1 -> 8.2 -> 9.5
+YOUR BOTTLENECK WEEKS: Week 3 (training + conversion) and Week 5 (inference bridge)
+TEAMMATE BOTTLENECK: Week 5 — they need to be mostly done with UI before you finish the bridge
+==========================================================================
+Total Tasks: ~50 | Tasks owned by you: ~25 | Tasks owned by teammates: ~20 | Shared: ~5
+==========================================================================
