@@ -1,138 +1,208 @@
-# ============================================================
-# app.py — Stroke Detection Web Application Backend
-# ============================================================
+# general modules
+import os
+import glob
+import numpy as np
+import pandas as pd
+import pydicom
+import cv2
+from PIL import Image
 
+# ML modules
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import roc_auc_score, accuracy_score, confusion_matrix
+import tensorflow as tf
+from tensorflow.keras.models import Model #type: ignore
+from tensorflow.keras.layers import Dense, Dropout, GlobalAveragePooling2D #type: ignore
+from tensorflow.keras.applications import ResNet50 #type: ignore
+from tensorflow.keras.optimizers import Adam #type: ignore
+from tensorflow.keras.losses import BinaryCrossentropy #type: ignore
+from tensorflow.keras.metrics import AUC #type: ignore
+from tensorflow.keras.applications.resnet50 import preprocess_input #type: ignore
 
-# ------------------------------------------------------------
-# 1. IMPORTS & CONFIGURATION
-# ------------------------------------------------------------
-# - Import Flask and necessary extensions (CORS, file handling)
-# - Import image processing libraries (PIL, OpenCV, NumPy)
-# - Import ML framework (PyTorch or TensorFlow)
-# - Define allowed file extensions (jpg, png, dcm, tiff)
-# - Set upload folder path and max file size limit
-# - Set model weights file path
-# - Set class labels: ["ischemic_stroke", "hemorrhagic_stroke", "no_stroke"]
-# - Set target image dimensions to match model training input size
-# - Configure logging
+# path to images folder for batching --> on Mac
+backend_folder = os.getcwd()
+images_folder = os.path.join(backend_folder + "/images/")
 
+# defining image constants
+IMAGES_PER_BATCH = 8
+IMAGE_SIZE = 224
+NUM_CLASSES = 6
 
-# ------------------------------------------------------------
-# 2. MODEL DEFINITION
-# ------------------------------------------------------------
-# - Define the CNN architecture class
-#   - Use a pretrained backbone (e.g. ResNet-50) for transfer learning
-#   - Freeze early layers, unfreeze later layers for fine-tuning
-#   - Replace final classification head with a 3-class output layer
-#   - Add dropout layer for regularization
-# - Define the forward pass method
+# hyperparameters
+HYPERPARAMS = {
+    # add more hyperparameters later
+    "epochs": 10,
+    "learning_rate": 1e-4,
+    "dropout_rate": 0.5,
+    "num_classes": 6,
+    "shuffle_buffer": 1000
+}
 
+# path to labeled csv files in the dataset --> on STEM remote desktop 
+rsna_folder = "C:/Users/aseetharaman/Documents/rsna-intracranial-hemorrhage-detection/"
+csv_labels_path = rsna_folder + "stage_1_train.csv"
+training_images_path = rsna_folder + "stage_1_train_images/"
+test_images_path = rsna_folder + "stage_1_test_images/"
 
-# ------------------------------------------------------------
-# 3. MODEL LOADING
-# ------------------------------------------------------------
-# - Detect available device (GPU vs CPU)
-# - Instantiate the model class
-# - Load saved weights from the model file path
-# - Set the model to evaluation mode (disables dropout/batchnorm training behavior)
-# - Store model and device as module-level globals so they load once at startup
+# load labels from .csv files
+df = pd.read_csv(csv_labels_path)
+image_ids = []
+types = []
 
+# split the csv labels by RSNA naming convention (ID_type)
+for index, row in df.iterrows():
+    full_id = row['Id']
+    parts = full_id.split('_')
+    image_id = parts[0]
+    type_name = "_".join(parts[1:])
+    image_ids.append(image_id)
+    types.append(type_name)
 
-# ------------------------------------------------------------
-# 4. IMAGE PREPROCESSING
-# ------------------------------------------------------------
-# - Define a preprocessing pipeline/transform:
-#   - Resize image to model's expected input dimensions
-#   - Convert to tensor
-#   - Normalize pixel values using ImageNet mean and std
-# - Write a function that:
-#   - Opens the image file using Pillow
-#   - Converts to RGB (handles grayscale MRI/CT scans)
-#   - Applies the preprocessing pipeline
-#   - Adds a batch dimension
-#   - Returns both the tensor (for inference) and raw numpy array (for Grad-CAM)
+df['ImageId'] = image_ids
+df['Type'] = types
 
+# create a dictionary to map image IDs to the hemorrhage labels
+data_map = {}
 
-# ------------------------------------------------------------
-# 5. STROKE CLASSIFICATION
-# ------------------------------------------------------------
-# - Write an inference function that:
-#   - Accepts the preprocessed image tensor
-#   - Runs a forward pass through the model with no gradient tracking
-#   - Applies softmax to convert raw logits to probabilities
-#   - Identifies the predicted class index and label
-#   - Returns the predicted class label and confidence score (0.0 – 1.0)
-#   - Flags result if confidence falls below a defined threshold
+for index, row in df.iterrows():
+    image_id = row['ImageId']
+    type_name = row['Type']
+    label = row['Label']
 
+    if image_id not in data_map:
+        data_map[image_id] = {}
+    
+    data_map[image_id][type_name] = label
 
-# ------------------------------------------------------------
-# 6. GRAD-CAM (VISUAL EXPLAINABILITY)
-# ------------------------------------------------------------
-# - Register a forward hook on the last convolutional layer to capture activations
-# - Register a backward hook on the same layer to capture gradients
-# - Write a Grad-CAM function that:
-#   - Runs a forward pass to get the predicted class score
-#   - Runs a backward pass to compute gradients for that class
-#   - Pools the gradients and weights the activation maps accordingly
-#   - Applies ReLU to keep only positive activations
-#   - Resizes the resulting heatmap to match the original image dimensions
-#   - Normalizes heatmap values to the 0–255 range
-#   - Overlays the heatmap onto the original scan image using a color map
-#   - Saves the overlaid image to the heatmaps folder
-#   - Returns the file path of the saved heatmap image
+# to use with TensorFlow, convert the dictionary to a dataframe
+df_full = pd.DataFrame()
 
+for image_id, labels_dict in data_map.items():
+    row = {'ImageId': image_id}
+    for key, value in labels_dict.items():
+        row[key] = value
 
-# ------------------------------------------------------------
-# 7. HELPER UTILITIES
-# ------------------------------------------------------------
-# - Write a function to validate uploaded file extensions
-# - Write a function to generate a unique filename (e.g. using UUID)
-#   to avoid collisions between concurrent uploads
-# - Write a function to clean up temporary uploaded files after processing
+    df_full = df_full.append(row, ignore_index = True)
 
-
-# ------------------------------------------------------------
-# 8. API ROUTES
-# ------------------------------------------------------------
-
-# POST /api/analyze
-# -----------------
-# - Validate that a file was included in the request
-# - Validate the file extension
-# - Save the file to the upload folder with a unique filename
-# - Call the preprocessing function on the saved file
-# - Call the classification function to get label and confidence
-# - Call the Grad-CAM function to generate the heatmap overlay
-# - Clean up the uploaded file
-# - Return JSON response containing:
-#   - predicted_class (e.g. "ischemic_stroke")
-#   - confidence (float between 0 and 1)
-#   - low_confidence flag (bool)
-#   - heatmap_url (path or URL to the heatmap image)
-#   - recommended_next_steps (plain-language guidance string)
-#   - disclaimer (reminder that this is not medical advice)
-
-# GET /api/heatmap/<filename>
 # ---------------------------
-# - Serve the generated heatmap image file from the heatmaps folder
-# - Return 404 if the file does not exist
+# 4. CT WINDOWING FUNCTION
+# ---------------------------
+# Function that:
+# - Takes DICOM pixel array
+# - Applies CT windowing
+#
+# Windows to implement:
+# - Brain window
+# - Subdural window
+# - Bone window
+#
+# Then stack them into 3 channels:
+#   R = brain
+#   G = subdural
+#   B = bone
+#
+# Resize to model input size
+# Normalize pixel values
 
-# POST /api/feedback
-# ------------------
-# - Parse the JSON body for fields: ease_of_use (int), comments (str), timestamp
-# - Validate that required fields are present
-# - Save the feedback entry to a JSON file or database record
-# - Return a confirmation response
 
-# GET /api/health
-# ---------------
-# - Return a simple status response confirming the server is running
-# - Useful for uptime monitoring and deployment checks
+# ---------------------------
+# 5. DICOM LOADER FUNCTION
+# ---------------------------
+# Function that:
+# - Reads a DICOM file
+# - Extracts pixel array
+# - Calls windowing function
+# - Returns processed image
 
 
-# ------------------------------------------------------------
-# 9. APP ENTRY POINT
-# ------------------------------------------------------------
-# - Run the Flask development server when the script is executed directly
-# - Set host to 0.0.0.0 to allow external connections (e.g. from the frontend)
-# - Set debug=False for any production or demo deployment
+# ---------------------------
+# 6. BATCH GENERATOR
+# ---------------------------
+# Generator function that:
+# - Loops through DICOM folder
+# - Loads images in batches
+# - Looks up labels using label dictionary
+# - Returns:
+#       batch_images, batch_labels
+#
+# This is required because dataset is too big to load all at once.
+
+
+# ---------------------------
+# 7. BUILD MODEL (TRANSFER LEARNING)
+# ---------------------------
+# Steps:
+# - Load pretrained ResNet50 WITHOUT top layer
+# - Freeze base model layers (at first)
+# - Add new layers:
+#     GlobalAveragePooling
+#     Dense
+#     Dropout
+#     Dense (6 outputs)
+#     Sigmoid activation
+#
+# Output = 6 probabilities (one for each hemorrhage type)
+
+
+# ---------------------------
+# 8. COMPILE MODEL
+# ---------------------------
+# Use:
+# - Optimizer: Adam
+# - Loss: Binary Cross Entropy
+# - Metrics: Accuracy and AUC
+
+
+# ---------------------------
+# 9. TRAIN MODEL
+# ---------------------------
+# Use:
+# - model.fit()
+# - training generator
+# - validation generator
+# - multiple epochs
+#
+# Save best model to file.
+
+
+# ---------------------------
+# 10. EVALUATE MODEL
+# ---------------------------
+# Calculate:
+# - AUC
+# - Accuracy
+# - Recall (very important for medical)
+# - Confusion matrix
+
+
+# ---------------------------
+# 11. PREDICT ON NEW DICOM SCANS
+# ---------------------------
+# Load saved model
+# Load new DICOM
+# Preprocess using same windowing
+# Predict
+# Output probabilities for:
+#   any
+#   epidural
+#   intraparenchymal
+#   intraventricular
+#   subarachnoid
+#   subdural
+
+
+# ---------------------------
+# 12. MAIN FUNCTION
+# ---------------------------
+# This should:
+# - Load labels
+# - Create generators
+# - Build model
+# - Train model
+# - Evaluate model
+# - Run predictions
+
+
+# ---------------------------
+# END OF FILE
+# ---------------------------
