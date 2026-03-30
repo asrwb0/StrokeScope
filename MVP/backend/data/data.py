@@ -1,3 +1,4 @@
+# type: ignore
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from config import CSV_LABELS_PATH, LABEL_COLS
