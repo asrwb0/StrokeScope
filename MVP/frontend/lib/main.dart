@@ -179,13 +179,70 @@ class FeedbackPage extends StatelessWidget {
           children: [
             const Text('Feedback Page', style: TextStyle(fontSize: 24)),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => context.go('/'),
-              child: const Text('Back to Home'),
-            ),
+            const MyCustomForm(),
           ],
         ),
       ),
     );
   }
 }
+
+class MyCustomForm extends StatefulWidget {
+  const MyCustomForm({super.key});
+
+  @override
+  State<MyCustomForm> createState() => _MyCustomFormState();
+}
+
+class _MyCustomFormState extends State<MyCustomForm> {
+  String? selectedValue;
+  final List<String> items = ['Medical Professional', 'Researcher', 'Patient', 'Student', 'Other'];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+          child: DropdownButton<String>(
+            value: selectedValue,
+            hint: const Text('Select an option'),
+            items: items.map<DropdownMenuItem<String>>((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                selectedValue = newValue;
+              });
+            },
+          ),
+        ),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+          child: TextField(
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              hintText: 'Type Here...',
+            ),
+          ),
+        ),
+        //add a overall experience star rating at some point
+        Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+  child: ElevatedButton(
+    onPressed: () {
+      // Handle form submission
+      print('Form submitted with selected value: $selectedValue');
+    },
+    child: const Text('Submit'),
+  ),
+),
+      ],
+    );
+  }
+}
+
