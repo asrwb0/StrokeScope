@@ -103,7 +103,7 @@ class HomePage extends StatelessWidget {
     ),
   ),
 ),
-      body: Center(
+      body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -141,7 +141,7 @@ class AnalyzePage extends StatelessWidget {
   ),
 ),
 
-      body: Center(
+      body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -173,13 +173,15 @@ class FeedbackPage extends StatelessWidget {
     ),
   ),
 ),
-      body: Center(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text('Feedback Page', style: TextStyle(fontSize: 24)),
             const SizedBox(height: 24),
             const MyCustomForm(),
+            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -195,53 +197,120 @@ class MyCustomForm extends StatefulWidget {
 }
 
 class _MyCustomFormState extends State<MyCustomForm> {
-  String? selectedValue;
-  final List<String> items = ['Medical Professional', 'Researcher', 'Patient', 'Student', 'Other'];
+  final _formKey = GlobalKey<FormState>();
+  String? selectedRole;
+  String? selectedExperience;
+  String? selectedPermission;
+  String answer1 = '';
+  String answer2 = '';
+
+  final List<String> roleItems = ['Medical Professional', 'Researcher', 'Patient', 'Student', 'Other'];
+  final List<String> aspectToComment = ['Analysis', 'Home Page', 'Contact Us', 'Overall Experience'];
+  final List<String> permissionGranted = ['Yes, I give consent to use my feedback to help improve the app', 'No, I do not give consent to use my feedback'];
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-          child: DropdownButton<String>(
-            value: selectedValue,
-            hint: const Text('Select an option'),
-            items: items.map<DropdownMenuItem<String>>((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          DropdownButtonFormField<String>(
+            value: selectedRole,
+            decoration: const InputDecoration(
+              labelText: 'Your role',
+              border: OutlineInputBorder(),
+            ),
+            hint: const Text('Select a role'),
+            items: roleItems
+                .map((value) => DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    ))
+                .toList(),
             onChanged: (String? newValue) {
               setState(() {
-                selectedValue = newValue;
+                selectedRole = newValue;
               });
             },
+            validator: (value) => value == null ? 'Please choose a role' : null,
           ),
-        ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-          child: TextField(
-            decoration: InputDecoration(
+
+          const SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            value: selectedExperience,
+            decoration: const InputDecoration(
+              labelText: 'Area of feedback',
               border: OutlineInputBorder(),
-              hintText: 'Type Here...',
             ),
+            hint: const Text('Area of app you want to comment on'),
+            items: aspectToComment
+                .map((value) => DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    ))
+                .toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                selectedExperience = newValue;
+              });
+            },
+            validator: (value) => value == null ? 'Please select experience' : null,
           ),
-        ),
-        //add a overall experience star rating at some point
-        Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-  child: ElevatedButton(
-    onPressed: () {
-      // Handle form submission
-      print('Form submitted with selected value: $selectedValue');
-    },
-    child: const Text('Submit'),
-  ),
-),
-      ],
+
+          const SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            value: selectedPermission,
+            decoration: const InputDecoration(
+              labelText: 'Permission to use feedback',
+              border: OutlineInputBorder(),
+            ),
+            hint: const Text('Select permission option'),
+            items: permissionGranted
+                .map((value) => DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    ))
+                .toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                selectedPermission = newValue;
+              });
+            },
+            validator: (value) => value == null ? 'Please select permission' : null,
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'How was your experience?',
+              hintText: 'Type here...',
+            ),
+            maxLines: 3,
+            onChanged: (value) => answer1 = value,
+            validator: (value) => value == null || value.trim().isEmpty ? 'Required field' : null,
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Additional comments',
+              hintText: 'Type here...',
+            ),
+            maxLines: 3,
+            onChanged: (value) => answer2 = value,
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () {
+              if (_formKey.currentState?.validate() ?? false) {
+                debugPrint('Form submitted: role=$selectedRole experience=$selectedExperience permission=$selectedPermission answer1=$answer1 answer2=$answer2');
+              }
+            },
+            child: const Text('Submit'),
+          ),
+        ],
+      ),
     );
   }
 }
