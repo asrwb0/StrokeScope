@@ -42,9 +42,4 @@ def predict(image_path):
 
     low_confidence = max(subtype_probs) < (PREDICTION_THRESHOLD + 0.1)
 
-    return PredictionResult(
-        probabilities = probabilities,
-        predictions = predictions,
-        any_hemorrhage = any_hemorrhage,
-        low_confidence = low_confidence
-    )
+    return PredictionResult(probabilities = probabilities, predictions = predictions, any_hemorrhage = any_hemorrhage, low_confidence = low_confidence)

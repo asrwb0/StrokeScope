@@ -237,10 +237,9 @@
 # Write generate_heatmap(model, preprocessed_tensor, original_image, label_index):
 #   If label_index is None, default to the label with the highest predicted probability
 #   Use tf.GradientTape to:
-#     Run a forward pass through the gradcam sub-model
-#     Record gradients of predictions[:, label_index] w.r.t. conv layer output
+#     
 #   Pool gradients spatially (mean over H and W axes) → shape (num_filters,)
-#   Weight each feature map by its pooled gradient
+#   Weight each feature map by its pooled gradient <--- Next thing to do
 #   Sum across filters → raw heatmap shape (7, 7)
 #   Apply ReLU (keep only positive activations)
 #   Normalise to [0, 1]
