@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   runApp(const StrokeScopeApp());
@@ -86,7 +87,14 @@ class _NavLink extends StatelessWidget {
       ),
     );                                                      
   }
-}                                                             
+}
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
 
 class _HomePageState extends State<HomePage> {
   final ScrollController _scrollController = ScrollController();
@@ -551,6 +559,74 @@ class FeedbackPage extends StatelessWidget {
   }
 }
 
+class StarRatingWidget extends StatefulWidget {
+  final int starCount;
+  final double initialRating;
+  final Color color;
+  final ValueChanged<double>? onRatingChanged;
+
+  const StarRatingWidget({
+    super.key,
+    this.starCount = 5,
+    this.initialRating = 0.0,
+    this.color = Colors.blue,
+    this.onRatingChanged,
+  });
+
+  @override
+  State<StarRatingWidget> createState() => _StarRatingWidgetState();
+}
+
+class _StarRatingWidgetState extends State<StarRatingWidget> {
+  late double rating;
+
+  @override
+  void initState() {
+    super.initState();
+    rating = widget.initialRating;
+  }
+
+  Widget buildStar(final BuildContext context, final int index) {
+    Icon icon;
+    if (index < rating) {
+      icon = Icon(
+        Icons.star,
+        size: 24,
+        color: widget.color,
+      );
+    } else {
+      icon = const Icon(
+        Icons.star_border,
+        size: 24,
+        color: Colors.grey,
+      );
+    }
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          rating = (index + 1).toDouble();
+        });
+        widget.onRatingChanged?.call(rating);
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: icon,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(
+        widget.starCount,
+        (final index) => buildStar(context, index),
+      ),
+    );
+  }
+}
+
 class MyCustomForm extends StatefulWidget {
   const MyCustomForm({super.key});
 
@@ -563,6 +639,7 @@ class _MyCustomFormState extends State<MyCustomForm> {
   String? selectedRole;
   String? selectedExperience;
   String? selectedPermission;
+  double userRating = 0.0;
   String answer1 = '';
   String answer2 = '';
 
@@ -596,6 +673,24 @@ class _MyCustomFormState extends State<MyCustomForm> {
               });
             },
             validator: (value) => value == null ? 'Please choose a role' : null,
+          ),
+
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('How would you rate your experience?', style: TextStyle(fontSize: 14)),
+              StarRatingWidget(
+                starCount: 5,
+                initialRating: userRating,
+                color: Colors.amber,
+                onRatingChanged: (rating) {
+                  setState(() {
+                    userRating = rating;
+                  });
+                },
+              ),
+            ],
           ),
 
           const SizedBox(height: 16),
@@ -666,7 +761,7 @@ class _MyCustomFormState extends State<MyCustomForm> {
           ElevatedButton(
             onPressed: () {
               if (_formKey.currentState?.validate() ?? false) {
-                debugPrint('Form submitted: role=$selectedRole experience=$selectedExperience permission=$selectedPermission answer1=$answer1 answer2=$answer2');
+                debugPrint('Form submitted: role=$selectedRole experience=$selectedExperience permission=$selectedPermission rating=$userRating answer1=$answer1 answer2=$answer2');
               }
             },
             child: const Text('Submit'),
