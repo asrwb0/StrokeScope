@@ -39,17 +39,18 @@ class NavBar extends StatelessWidget {
   final String currentPath;
   const NavBar({super.key, required this.currentPath});
 
+
   @override
-  Widget build(BuildContext context) {                          
-    return Container(                                   
+  Widget build(BuildContext context) {
+    return Container(
       height: 68,
       color: const Color(0xFF0A1F44),
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Row(
-        children: [                                       
+        children: [
           // Need to add logo to is a place holder
           const Text(
-            'Stroke Scope',                                    
+            'Stroke Scope',
             style: TextStyle(
               color: Colors.white,
               fontSize: 18,
@@ -58,48 +59,61 @@ class NavBar extends StatelessWidget {
             ),
           ),
           _NavLink(label: 'Home', path: '/', currentPath: currentPath),
-          _NavLink(label: 'Analyze', path: '/analyze', currentPath: currentPath),
-          _NavLink(label: 'Feedback', path: '/feedback', currentPath: currentPath),
+          _NavLink(
+            label: 'Analyze',
+            path: '/analyze',
+            currentPath: currentPath,
+          ),
+          _NavLink(
+            label: 'Feedback',
+            path: '/feedback',
+            currentPath: currentPath,
+          ),
         ],
       ),
     );
   }
 }
 
-class _NavLink extends StatelessWidget {                 
+
+class _NavLink extends StatelessWidget {
   final String label;
   final String path;
   final String currentPath;
-  const _NavLink({required this.label, required this.path, required this.currentPath}); 
+  const _NavLink({
+    required this.label,
+    required this.path,
+    required this.currentPath,
+  });
+
 
   // need to figure out hover at some point
 
+
   @override
-  Widget build(BuildContext context) {                      
-    final isActive = currentPath == path;                     
+  Widget build(BuildContext context) {
+    final isActive = currentPath == path;
+
 
     return GestureDetector(
       onTap: () => context.go(path),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 4),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: Colors.white,                              
-            fontSize: 15,
-          ),
-        ),
+        child: Text(label, style: TextStyle(color: Colors.white, fontSize: 15)),
       ),
-    );                                                      
+    );
   }
 }
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
+
 
 class _HomePageState extends State<HomePage> {
   final ScrollController _scrollController = ScrollController();
@@ -498,6 +512,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
 
 
 class AnalyzePage extends StatefulWidget {
