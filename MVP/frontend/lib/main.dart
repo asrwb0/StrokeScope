@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:dotted_border/dotted_border.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:dotted_border/dotted_border.dart';
+import 'package:dio/dio.dart';
 
 void main() {
   runApp(const StrokeScopeApp());
@@ -495,32 +500,131 @@ class _HomePageState extends State<HomePage> {
 }
 
 
-class AnalyzePage extends StatelessWidget {
+class AnalyzePage extends StatefulWidget {
   const AnalyzePage({super.key});
+
+  @override
+  State<AnalyzePage> createState() => _AnalyzePageState();
+}
+
+class _AnalyzePageState extends State<AnalyzePage> {
+  PlatformFile? _selectedFile;
+
+  Future<void> _pickFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['dcm', 'dicom', 'jpg', 'jpeg', 'png'],
+    );
+    if (result != null) {
+      setState(() {
+        _selectedFile = result.files.first;
+      });
+    }
+  }
+
+  Widget _buildUploadBox() {
+    return DottedBorder(
+      color: Colors.white,
+      strokeWidth: 2,
+      dashPattern: const [6, 6],
+      borderType: BorderType.RRect,
+      radius: const Radius.circular(12),
+      child: GestureDetector(
+        onTap: _pickFile,
+        child: Container(
+          width: double.infinity,
+          height: 200,
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 21, 34, 51),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: _selectedFile == null ? _emptyState() : _fileSelected(),
+        ),
+      ),
+    );
+  }
+
+  Widget _emptyState() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.psychology, color: Color(0xFF0A1F44), size: 48),
+        const SizedBox(height: 12),
+        const Text(
+          'Click to upload a CT scan',
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Click to Browse Files',
+          style: TextStyle(color: Colors.white70, fontSize: 14),
+        ),
+        const SizedBox(height: 8),
+        ElevatedButton(
+          onPressed: _pickFile,
+          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1ECBFF)),
+          child: const Text('Browse Files', style: TextStyle(color: Colors.black)),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Supported formats: DICOM, JPEG, PNG',
+          style: TextStyle(color: Colors.white70, fontSize: 12),
+        ),
+      ],
+    );
+  }
+
+  Widget _fileSelected() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.check_circle, color: Color(0xFF00C8FF), size: 48),
+        const SizedBox(height: 12),
+        Text(
+          _selectedFile!.name,
+          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+        ElevatedButton(
+          onPressed: () {
+            // Handle file analysis
+          },
+          child: const Text('Analyze File'),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.blue,
       appBar: PreferredSize(
-  preferredSize: const Size.fromHeight(68),
-  child: Material(
-    color: const Color(0xFF0A1F44),
-    child: SafeArea(
-      child: NavBar(currentPath: '/'),
-    ),
-  ),
-),
-
-      body: SingleChildScrollView(
+        preferredSize: const Size.fromHeight(68),
+        child: Material(
+          color: const Color(0xFF0A1F44),
+          child: SafeArea(
+            child: NavBar(currentPath: '/analyze'),
+          ),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Analysis Page', style: TextStyle(fontSize: 24)),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => context.go('/'),
-              child: const Text('Back to Home'),
+            const Text(
+              'Scan Analysis',
+              style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 16),
+            const Text(
+              'Upload a CT scan to detect signs of hemorrhagic stroke.',
+              style: TextStyle(color: Colors.white70, fontSize: 18),
+            ),
+            const SizedBox(height: 24),
+            Expanded(child: _buildUploadBox()),
           ],
         ),
       ),
@@ -539,7 +643,7 @@ class FeedbackPage extends StatelessWidget {
   child: Material(
     color: const Color(0xFF0A1F44),
     child: SafeArea(
-      child: NavBar(currentPath: '/'),
+      child: NavBar(currentPath: '/feedback'),
     ),
   ),
 ),
