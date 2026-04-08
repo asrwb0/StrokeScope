@@ -167,7 +167,7 @@ graph TB
 | Flutter SDK        | ≥ 3.11 | [Docs](https://docs.flutter.dev/get-started/install) |
 | Python             | ≥ 3.9  | [Python.org](https://www.python.org/) |
 | Firebase CLI       | —      | [Docs](https://firebase.google.com/docs/cli) |
-| Anthropic API key  | —      | [Sign up](https://console.anthropic.com/) |
+| OpenAI API key  | —      | [Sign up](https://platform.openai.com/home/) |
 | RSNA Dataset       | —      | [Kaggle](https://www.kaggle.com/c/rsna-intracranial-hemorrhage-detection) |
 </div>
 
@@ -206,7 +206,7 @@ flutter pub get
 
 # Create a .env file with API keys
 # Required fields:
-#   ANTHROPIC_API_KEY=sk-ant-...
+#   OPENAI_API_KEY=sk-ant-...
 #   FIREBASE_API_KEY=...
 #   FIREBASE_PROJECT_ID=...
 
