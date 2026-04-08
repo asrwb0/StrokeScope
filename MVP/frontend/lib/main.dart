@@ -559,6 +559,33 @@ class _AnalyzePageState extends State<AnalyzePage> {
     );
   }
 
+  Widget _buildResultsBox() {
+    return Container(
+      height: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color (0xFF1A2B3C),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white, width: 2),
+      ),
+      child: const Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.document_scanner_outlined, color: Colors.white38, size: 48),
+          SizedBox(height:12),
+          Text(
+            'Detection results will appear here after analysis',
+            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          SizedBox (height:6), 
+          Text(
+            'Await results...',
+            style: TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _emptyState() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -611,10 +638,56 @@ class _AnalyzePageState extends State<AnalyzePage> {
     );
   }
 
+  Widget _buildDisclaimer(){
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A2B3C),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 6),
+          RichText(
+            text: const TextSpan(
+              style: TextStyle(color: Colors.white54, fontSize: 12, height: 1.5),
+              children: [
+                TextSpan(text: 'Model trained on '),
+                TextSpan(
+                  text: 'RSNA Intracranial Hemorrhage Detection',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+                TextSpan(text: ' dataset and '),
+                TextSpan(
+                  text: 'ISLES 2022',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+                TextSpan(
+                  text: ' ischemic stroke lesion segmentation dataset — both publicly available for research use.',
+                ),
+              ],
+            ),
+          ),
+          const Text(
+            'Disclaimer',
+            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'This app is for educational purposes only and should not be used for medical diagnosis or treatment. Always consult a healthcare professional for medical advice.',
+            style: TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+        ],
+      )
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue,
+      backgroundColor: const Color(0xFF0D1B2A),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(68),
         child: Material(
@@ -639,7 +712,30 @@ class _AnalyzePageState extends State<AnalyzePage> {
               style: TextStyle(color: Colors.white70, fontSize: 18),
             ),
             const SizedBox(height: 24),
-            Expanded(child: _buildUploadBox()),
+            Expanded(
+  child: Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // LEFT column: upload box + disclaimer
+      Expanded(
+        child: Column(
+          children: [
+            _buildUploadBox(),
+            const SizedBox(height: 12),
+            _buildDisclaimer(),
+          ],
+        ),
+      ),
+
+      const SizedBox(width: 16),
+
+      // RIGHT column: results box
+      Expanded(
+        child: _buildResultsBox(),
+      ),
+    ],
+  ),
+),
           ],
         ),
       ),
