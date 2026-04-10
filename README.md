@@ -2,7 +2,7 @@
 
 StrokeScope is a cross-platform Progressive Web App (PWA) that analyzes brain CT scans using a deep learning model to detect and classify intracranial hemorrhages. It provides plain-language, AI-generated explanations of results alongside a mandatory medical disclaimer, designed to serve as an educational and clinical decision-support tool.
 
-StrokeScope is being built for the **2026 Apps For Good Challenge** as part of the Computer Science curriculum at the **Massachusetts Academy of Math & Science at WPI**.
+StrokeScope is being built for the **2026 Apps For Good Challenge** as part of the Computer Science curriculum at the **Massachusetts Academy of Math & Science at WPI**, using the VSCode IDE and its packages for Flutter and Python development.
 
 **Medical Disclaimer:** StrokeScope is not a substitute for professional medical diagnosis. All results are for informational and educational purposes only. Always consult a licensed medical professional.
 
@@ -105,7 +105,7 @@ graph TB
     %% Backend
     backend["📂 backend"]
     MVP --> backend
-    backend --> mainpy["main.py - Flask entry & API stubs"]
+    backend --> mainpy["main.py - API stubs"]
     backend --> configpy["config.py - Hyperparameters & paths"]
 
     api["📂 api"]
@@ -181,7 +181,7 @@ git checkout backend
 python -m venv venv
 source venv/bin/activate
 
-pip install tensorflow keras pydicom numpy opencv-python pandas scikit-learn flask flask-cors
+pip install tensorflow keras pydicom numpy opencv-python pandas scikit-learn
 
 # Configure paths
 # Edit MVP/backend/config.py and update:
@@ -373,7 +373,7 @@ dependencies:
 
 ## API Reference
 
-The Flask backend (`main.py`) defines the following endpoints. Full implementation is in progress.
+The backend (`main.py`) defines the following endpoints. Full implementation is in progress.
 
 ### `POST /api/analyze`
 
