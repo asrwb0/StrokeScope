@@ -14,6 +14,7 @@ final _router = GoRouter(
       path: '/feedback',
       builder: (context, state) => const FeedbackPage(),
     ),
+    GoRoute(path: '/info', builder: (context, state) => const InfoPage()),
   ],
 );
 
@@ -37,14 +38,18 @@ class NavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 68,
+      height: 75,
       color: const Color(0xFF0A1F44),
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          // Need to add logo to is a place holder
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Image.asset('images/icon.png'),
+          ),
           const Text(
-            'Stroke Scope',
+            'Stroke Scope ',
             style: TextStyle(
               color: Colors.white,
               fontSize: 18,
@@ -395,7 +400,7 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 24),
 
               ElevatedButton(
-                onPressed: () => context.go('/analyze'),
+                onPressed: () => context.go('/info'),
                 child: Text(
                   'Click here to learn more!',
                   style: GoogleFonts.bebasNeue(fontSize: 28),
@@ -486,6 +491,168 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class InfoPage extends StatelessWidget {
+  const InfoPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(68),
+        child: Material(
+          color: const Color(0xFF0A1F44),
+          child: const SafeArea(child: NavBar(currentPath: '/')),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Container(
+          color: const Color.fromARGB(255, 230, 235, 255),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(height: 2, color: Colors.black),
+              Text(
+                'LEARN MORE ABOUT STROKES',
+                style: GoogleFonts.bebasNeue(
+                  fontSize: 60,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+
+              const SizedBox(height: 24),
+              Container(
+                width: 1200,
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: const Color(0xFF0A1F44), width: 3),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Strokes are the fifth leading cause of death in the United States and the second leading cause of death worldwide (NINDS Recognizes Stroke Awareness Month | National Institute of Neurological Disorders and Stroke, 2024). Every 40 seconds, an individual suffers from a stroke in the U.S., with a death occurring every three minutes (CDC, 2025). These devastating incidents are the result of "brain attacks," times at which the brain is cut off from blood circulation, and oxygen is not able to properly reach brain cells. Deprived of vital nutrients, the brain loses nearly two million functioning cells each minute (CDC, 2025). While this damage can be minimized if blood flow is restored quickly, the body\'s natural response often can cause further harm by exerting pressure on the skull and creating tissue damage that cannot be repaired. These outcomes can often lead to seizures or other permanent impairments, making strokes the primary contributor to serious long-term disabilities (CDC, 2025).',
+                  style: GoogleFonts.jost(fontSize: 20),
+                  textAlign: TextAlign.center,
+                  softWrap: true,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: 1200,
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: const Color(0xFF0A1F44), width: 3),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Despite their ubiquitously negative effects, not all strokes fall under the same category. As shown in Figure 1, there are two main types of strokes, both of which require vastly different courses of medical treatment. First, hemorrhagic strokes are the result of a ruptured blood vessel in the brain, either intracerebral (inside the brain) or subarachnoid (between the brain and the skull). In these cases, medical professionals prescribe medication intended to lower brain pressure and swelling, sometimes with the use of blood thinners ("A Neurosurgeon\'s Guide to Stroke," n.d.). Hemorrhagic and ischemic strokes make up twenty percent and eighty percent of all strokes, respectively (NINDS Recognizes Stroke Awareness Month | National Institute of Neurological Disorders and Stroke, 2024). Ischemic strokes, unlike hemorrhagic ones, are the result of vessel blockage (in the form of clots or plaque) that restricts the flow of blood to the brain. Treatment plans for these patients may include a catheter-based procedure to remove the clot, or "clot-buster" medications that break down the protein that binds blood together (NINDS Recognizes Stroke Awareness Month | National Institute of Neurological Disorders and Stroke, 2024). Although more common, some ischemic strokes appear to be "mini" and harmless; these are coined as transient ischemic attacks (TIA), which can actually serve as a life-threatening symptom for more imminent events (Friends, 2025). Thus, early detection of strokes is the biggest preventative measure, as 80% of these occurrences can be averted (May Is American Stroke Month, n.d.).',
+                  style: GoogleFonts.jost(fontSize: 20),
+                  textAlign: TextAlign.center,
+                  softWrap: true,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: 900,
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: const Color(0xFF0A1F44), width: 3),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Image.asset(
+                      'images/types-of-stroke-img.webp',
+                      width: 500,
+                      height: 400,
+                      fit: BoxFit.cover,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Figure 1: Types of Strokes. This visual depicts the three main classes of strokes, which include permanent blockages, vessel ruptures, and temporary blockages (Stroke: Symptoms, Causes, Treatment, Types, and More, n.d.).',
+                      style: GoogleFonts.jost(fontSize: 20),
+                      textAlign: TextAlign.center,
+                      softWrap: true,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: 1200,
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: const Color(0xFF0A1F44), width: 3),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Despite growing stroke education initiatives, significant gaps remain in current treatment approaches. In the current healthcare system, the average patient must first book an appointment at a local hospital, then get referred to a specialist for brain imaging, wait for approval and an assigned date, and finally either have the results interpreted for future treatment plans or get referred for second and third opinions, in a seemingly never-ending loop (Healthwatch, 2023). Even this proposed path, as further supported by Figure 2, is the optimal case at best. In reality, doctors are in high demand, making it hard to get in contact with a trusted provider in the first place. Additionally, for many, consulting multiple specialists may not be an option, especially for those in resource-limited areas or with financial constraints.',
+                  style: GoogleFonts.jost(fontSize: 20),
+                  textAlign: TextAlign.center,
+                  softWrap: true,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: 900,
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: const Color(0xFF0A1F44), width: 3),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Image.asset(
+                      'images/process.png',
+                      width: 500,
+                      height: 400,
+                      fit: BoxFit.contain,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Figure 2: Flowchart of Patient Timeline for Receiving Care. This figure models how patients must go through a cycle of booking and waiting for specialist appointments (Healthwatch, 2023).',
+                      style: GoogleFonts.jost(fontSize: 20),
+                      textAlign: TextAlign.center,
+                      softWrap: true,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: 1200,
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: const Color(0xFF0A1F44), width: 3),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'It is this very cycle that jeopardizes patient health. For a condition in which every second counts, this lengthy process actively diminishes an individual\'s chance of a full recovery. In fact, in 2021, the American Stroke Association conducted a study to determine the effects of delayed treatment on the lifespan of severe stroke patients. The study, conducted around 406 individuals with life-threatening artery blockages, revealed that each 10-minute delay in treatment resulted in a loss of eleven months of healthy life (Even Short Delays in the ER May Reduce the Lifespan of Stroke Survivors, n.d.). Thus, rapid detection is vital to stroke recovery.',
+                  style: GoogleFonts.jost(fontSize: 20),
+                  textAlign: TextAlign.center,
+                  softWrap: true,
+                ),
+              ),
+              const SizedBox(height: 24),
             ],
           ),
         ),
