@@ -209,4 +209,4 @@ __marimo__/
 weights/
 uploads/
 heatmaps/
-*.dcm
+*.dcmvenv/
