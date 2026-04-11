@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:dotted_border/dotted_border.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:dotted_border/dotted_border.dart';
+import 'package:dio/dio.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   runApp(const StrokeScopeApp());
@@ -49,7 +55,7 @@ class NavBar extends StatelessWidget {
             child: Image.asset('images/icon.png'),
           ),
           const Text(
-            'Stroke Scope ',
+            'Stroke Scope',
             style: TextStyle(
               color: Colors.white,
               fontSize: 18,
@@ -60,12 +66,16 @@ class NavBar extends StatelessWidget {
           _NavLink(label: 'Home', path: '/', currentPath: currentPath),
           _NavLink(
             label: 'Analyze',
+
             path: '/analyze',
+
             currentPath: currentPath,
           ),
           _NavLink(
             label: 'Feedback',
+
             path: '/feedback',
+
             currentPath: currentPath,
           ),
         ],
@@ -661,12 +671,211 @@ class InfoPage extends StatelessWidget {
   }
 }
 
-class AnalyzePage extends StatelessWidget {
+class AnalyzePage extends StatefulWidget {
   const AnalyzePage({super.key});
+
+  @override
+  State<AnalyzePage> createState() => _AnalyzePageState();
+}
+
+class _AnalyzePageState extends State<AnalyzePage> {
+  PlatformFile? _selectedFile;
+
+  Future<void> _pickFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['dcm', 'dicom', 'jpg', 'jpeg', 'png'],
+    );
+    if (result != null) {
+      setState(() {
+        _selectedFile = result.files.first;
+      });
+    }
+  }
+
+  Widget _buildUploadBox() {
+    return DottedBorder(
+      color: Colors.white,
+      strokeWidth: 2,
+      dashPattern: const [6, 6],
+      borderType: BorderType.RRect,
+      radius: const Radius.circular(12),
+      child: GestureDetector(
+        onTap: _pickFile,
+        child: Container(
+          width: double.infinity,
+          height: 200,
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 21, 34, 51),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: _selectedFile == null ? _emptyState() : _fileSelected(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResultsBox() {
+    return Container(
+      height: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A2B3C),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white, width: 2),
+      ),
+      child: const Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.document_scanner_outlined,
+            color: Colors.white38,
+            size: 48,
+          ),
+          SizedBox(height: 12),
+          Text(
+            'Detection results will appear here after analysis',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 6),
+          Text(
+            'Await results...',
+            style: TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _emptyState() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.psychology, color: Color(0xFF0A1F44), size: 48),
+        const SizedBox(height: 12),
+        const Text(
+          'Click to upload a CT scan',
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Click to Browse Files',
+          style: TextStyle(color: Colors.white70, fontSize: 14),
+        ),
+        const SizedBox(height: 8),
+        ElevatedButton(
+          onPressed: _pickFile,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF1ECBFF),
+          ),
+          child: const Text(
+            'Browse Files',
+            style: TextStyle(color: Colors.black),
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Supported formats: DICOM, JPEG, PNG',
+          style: TextStyle(color: Colors.white70, fontSize: 12),
+        ),
+      ],
+    );
+  }
+
+  Widget _fileSelected() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.check_circle, color: Color(0xFF00C8FF), size: 48),
+        const SizedBox(height: 12),
+        Text(
+          _selectedFile!.name,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+        ElevatedButton(
+          onPressed: () {
+            // Handle file analysis
+          },
+          child: const Text('Analyze File'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDisclaimer() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A2B3C),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 6),
+          RichText(
+            text: const TextSpan(
+              style: TextStyle(
+                color: Colors.white54,
+                fontSize: 12,
+                height: 1.5,
+              ),
+              children: [
+                TextSpan(text: 'Model trained on '),
+                TextSpan(
+                  text: 'RSNA Intracranial Hemorrhage Detection',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                TextSpan(text: ' dataset and '),
+                TextSpan(
+                  text: 'ISLES 2022',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                TextSpan(
+                  text:
+                      ' ischemic stroke lesion segmentation dataset — both publicly available for research use.',
+                ),
+              ],
+            ),
+          ),
+          const Text(
+            'Disclaimer',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'This app is for educational purposes only and should not be used for medical diagnosis or treatment. Always consult a healthcare professional for medical advice.',
+            style: TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0D1B2A),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(68),
         child: Material(
@@ -674,15 +883,46 @@ class AnalyzePage extends StatelessWidget {
           child: SafeArea(child: NavBar(currentPath: '/analyze')),
         ),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Analysis Page', style: TextStyle(fontSize: 24)),
+            const Text(
+              'Scan Analysis',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Upload a CT scan to detect signs of hemorrhagic stroke.',
+              style: TextStyle(color: Colors.white70, fontSize: 18),
+            ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => context.go('/'),
-              child: const Text('Back to Home'),
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // LEFT column: upload box + disclaimer
+                  Expanded(
+                    child: Column(
+                      children: [
+                        _buildUploadBox(),
+                        const SizedBox(height: 12),
+                        _buildDisclaimer(),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(width: 16),
+
+                  // RIGHT column: results box
+                  Expanded(child: _buildResultsBox()),
+                ],
+              ),
             ),
           ],
         ),
@@ -704,7 +944,8 @@ class FeedbackPage extends StatelessWidget {
           child: SafeArea(child: NavBar(currentPath: '/feedback')),
         ),
       ),
-      body: Center(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -718,6 +959,66 @@ class FeedbackPage extends StatelessWidget {
   }
 }
 
+class StarRatingWidget extends StatefulWidget {
+  final int starCount;
+  final double initialRating;
+  final Color color;
+  final ValueChanged<double>? onRatingChanged;
+
+  const StarRatingWidget({
+    super.key,
+    this.starCount = 5,
+    this.initialRating = 0.0,
+    this.color = Colors.blue,
+    this.onRatingChanged,
+  });
+
+  @override
+  State<StarRatingWidget> createState() => _StarRatingWidgetState();
+}
+
+class _StarRatingWidgetState extends State<StarRatingWidget> {
+  late double rating;
+
+  @override
+  void initState() {
+    super.initState();
+    rating = widget.initialRating;
+  }
+
+  Widget buildStar(final BuildContext context, final int index) {
+    Icon icon;
+    if (index < rating) {
+      icon = Icon(Icons.star, size: 24, color: widget.color);
+    } else {
+      icon = const Icon(Icons.star_border, size: 24, color: Colors.grey);
+    }
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          rating = (index + 1).toDouble();
+        });
+        widget.onRatingChanged?.call(rating);
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: icon,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(
+        widget.starCount,
+        (final index) => buildStar(context, index),
+      ),
+    );
+  }
+}
+
 class MyCustomForm extends StatefulWidget {
   const MyCustomForm({super.key});
 
@@ -726,56 +1027,153 @@ class MyCustomForm extends StatefulWidget {
 }
 
 class _MyCustomFormState extends State<MyCustomForm> {
-  String? selectedValue;
-  final List<String> items = [
+  final _formKey = GlobalKey<FormState>();
+  String? selectedRole;
+  String? selectedExperience;
+  String? selectedPermission;
+  double userRating = 0.0;
+  String answer1 = '';
+  String answer2 = '';
+
+  final List<String> roleItems = [
     'Medical Professional',
     'Researcher',
     'Patient',
     'Student',
     'Other',
   ];
+  final List<String> aspectToComment = [
+    'Analysis',
+    'Home Page',
+    'Contact Us',
+    'Overall Experience',
+  ];
+  final List<String> permissionGranted = [
+    'Yes, I give consent to use my feedback to help improve the app',
+    'No, I do not give consent to use my feedback',
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-          child: DropdownButton<String>(
-            value: selectedValue,
-            hint: const Text('Select an option'),
-            items: items.map<DropdownMenuItem<String>>((String value) {
-              return DropdownMenuItem<String>(value: value, child: Text(value));
-            }).toList(),
-            onChanged: (String? newValue) {
-              setState(() {
-                selectedValue = newValue;
-              });
-            },
-          ),
-        ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-          child: TextField(
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: 'Type Here...',
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+            child: DropdownButtonFormField<String>(
+              value: selectedRole,
+              decoration: const InputDecoration(
+                labelText: 'Your role',
+                border: OutlineInputBorder(),
+              ),
+              hint: const Text('Select your role'),
+              items: roleItems
+                  .map(
+                    (value) => DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedRole = newValue;
+                });
+              },
+              validator: (value) =>
+                  value == null ? 'Please choose a role' : null,
             ),
           ),
-        ),
-        //add a overall experience star rating at some point
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-          child: ElevatedButton(
-            onPressed: () {
-              // Handle form submission
-              print('Form submitted with selected value: $selectedValue');
-            },
-            child: const Text('Submit'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'How would you rate your experience?',
+                  style: TextStyle(fontSize: 14),
+                ),
+                StarRatingWidget(
+                  starCount: 5,
+                  initialRating: userRating,
+                  color: Colors.amber,
+                  onRatingChanged: (rating) {
+                    setState(() {
+                      userRating = rating;
+                    });
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: DropdownButtonFormField<String>(
+              value: selectedExperience,
+              decoration: const InputDecoration(
+                labelText: 'Area of feedback',
+                border: OutlineInputBorder(),
+              ),
+              hint: const Text('Area of app you want to comment on'),
+              items: aspectToComment
+                  .map(
+                    (value) => DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedExperience = newValue;
+                });
+              },
+              validator: (value) =>
+                  value == null ? 'Please select experience' : null,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: DropdownButtonFormField<String>(
+              value: selectedPermission,
+              decoration: const InputDecoration(
+                labelText: 'Permission to use feedback',
+                border: OutlineInputBorder(),
+              ),
+              hint: const Text('Select permission'),
+              items: permissionGranted
+                  .map(
+                    (value) => DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedPermission = newValue;
+                });
+              },
+            ),
+          ),
+          //add a overall experience star rating at some point
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+            child: ElevatedButton(
+              onPressed: () {
+                if (_formKey.currentState?.validate() ?? false) {
+                  debugPrint(
+                    'Form submitted: role=$selectedRole experience=$selectedExperience permission=$selectedPermission rating=$userRating answer1=$answer1 answer2=$answer2',
+                  );
+                }
+              },
+              child: const Text('Submit'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
