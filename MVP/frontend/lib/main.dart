@@ -938,6 +938,7 @@ class FeedbackPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0D1B2A),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(68),
         child: Material(
@@ -948,9 +949,21 @@ class FeedbackPage extends StatelessWidget {
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Feedback Page', style: TextStyle(fontSize: 24)),
+            const Text(
+              'Feedback',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Help us improve StrokeScope.',
+              style: TextStyle(color: Colors.white70, fontSize: 18),
+            ),
             const SizedBox(height: 24),
             const MyCustomForm(),
           ],
@@ -1030,11 +1043,10 @@ class MyCustomForm extends StatefulWidget {
 class _MyCustomFormState extends State<MyCustomForm> {
   final _formKey = GlobalKey<FormState>();
   String? selectedRole;
+  double userRating = 0.0;
   String? selectedExperience;
   String? selectedPermission;
-  double userRating = 0.0;
-  String answer1 = '';
-  String answer2 = '';
+  final TextEditingController _commentsController = TextEditingController();
 
   final List<String> roleItems = [
     'Medical Professional',
@@ -1043,137 +1055,191 @@ class _MyCustomFormState extends State<MyCustomForm> {
     'Student',
     'Other',
   ];
+
   final List<String> aspectToComment = [
     'Analysis',
     'Home Page',
     'Contact Us',
     'Overall Experience',
   ];
+
   final List<String> permissionGranted = [
     'Yes, I give consent to use my feedback to help improve the app',
     'No, I do not give consent to use my feedback',
   ];
 
+  InputDecoration _darkDropdownDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: Colors.white70),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Colors.white30),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFF1ECBFF)),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _commentsController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-            child: DropdownButtonFormField<String>(
-              value: selectedRole,
-              decoration: const InputDecoration(
-                labelText: 'Your role',
-                border: OutlineInputBorder(),
+    return Theme(
+      data: Theme.of(context).copyWith(
+        canvasColor: const Color(0xFF1A2B3C),
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+
+            // Role dropdown
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: DropdownButtonFormField<String>(
+                value: selectedRole,
+                dropdownColor: const Color(0xFF1A2B3C),
+                style: const TextStyle(color: Colors.white),
+                decoration: _darkDropdownDecoration('Your role'),
+                hint: const Text('Select your role', style: TextStyle(color: Colors.white54)),
+                items: roleItems
+                    .map((value) => DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value, style: const TextStyle(color: Colors.white)),
+                        ))
+                    .toList(),
+                onChanged: (newValue) => setState(() => selectedRole = newValue),
+                validator: (value) => value == null ? 'Please choose a role' : null,
               ),
-              hint: const Text('Select your role'),
-              items: roleItems
-                  .map(
-                    (value) => DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedRole = newValue;
-                });
-              },
-              validator: (value) =>
-                  value == null ? 'Please choose a role' : null,
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'How would you rate your experience?',
-                  style: TextStyle(fontSize: 14),
+
+            // Star rating row
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A2B3C),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.white30),
                 ),
-                StarRatingWidget(
-                  starCount: 5,
-                  initialRating: userRating,
-                  color: Colors.amber,
-                  onRatingChanged: (rating) {
-                    setState(() {
-                      userRating = rating;
-                    });
-                  },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'How would you rate your experience?',
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                    ),
+                    StarRatingWidget(
+                      starCount: 5,
+                      initialRating: userRating,
+                      color: const Color(0xFF1ECBFF),
+                      onRatingChanged: (rating) => setState(() => userRating = rating),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: DropdownButtonFormField<String>(
-              value: selectedExperience,
-              decoration: const InputDecoration(
-                labelText: 'Area of feedback',
-                border: OutlineInputBorder(),
               ),
-              hint: const Text('Area of app you want to comment on'),
-              items: aspectToComment
-                  .map(
-                    (value) => DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedExperience = newValue;
-                });
-              },
-              validator: (value) =>
-                  value == null ? 'Please select experience' : null,
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: DropdownButtonFormField<String>(
-              value: selectedPermission,
-              decoration: const InputDecoration(
-                labelText: 'Permission to use feedback',
-                border: OutlineInputBorder(),
+
+            // Area of feedback dropdown
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: DropdownButtonFormField<String>(
+                value: selectedExperience,
+                dropdownColor: const Color(0xFF1A2B3C),
+                style: const TextStyle(color: Colors.white),
+                decoration: _darkDropdownDecoration('Area of feedback'),
+                hint: const Text('Area of app you want to comment on', style: TextStyle(color: Colors.white54)),
+                items: aspectToComment
+                    .map((value) => DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value, style: const TextStyle(color: Colors.white)),
+                        ))
+                    .toList(),
+                onChanged: (newValue) => setState(() => selectedExperience = newValue),
+                validator: (value) => value == null ? 'Please select an area' : null,
               ),
-              hint: const Text('Select permission'),
-              items: permissionGranted
-                  .map(
-                    (value) => DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedPermission = newValue;
-                });
-              },
             ),
-          ),
-          //add a overall experience star rating at some point
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-            child: ElevatedButton(
-              onPressed: () {
-                if (_formKey.currentState?.validate() ?? false) {
-                  debugPrint(
-                    'Form submitted: role=$selectedRole experience=$selectedExperience permission=$selectedPermission rating=$userRating answer1=$answer1 answer2=$answer2',
-                  );
-                }
-              },
-              child: const Text('Submit'),
+
+            // Comments text field
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: TextFormField(
+                controller: _commentsController,
+                maxLines: 5,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Your comments',
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  hintText: 'Share your thoughts about this area...',
+                  hintStyle: const TextStyle(color: Colors.white30),
+                  alignLabelWithHint: true,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.white30),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF1ECBFF)),
+                  ),
+                  filled: true,
+                  fillColor: const Color(0xFF1A2B3C),
+                ),
+              ),
             ),
-          ),
-        ],
+
+            // Permission dropdown
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: DropdownButtonFormField<String>(
+                value: selectedPermission,
+                dropdownColor: const Color(0xFF1A2B3C),
+                style: const TextStyle(color: Colors.white),
+                decoration: _darkDropdownDecoration('Permission to use feedback'),
+                hint: const Text('Select permission', style: TextStyle(color: Colors.white54)),
+                items: permissionGranted
+                    .map((value) => DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value, style: const TextStyle(color: Colors.white)),
+                        ))
+                    .toList(),
+                onChanged: (newValue) => setState(() => selectedPermission = newValue),
+              ),
+            ),
+
+            // Submit button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState?.validate() ?? false) {
+                    debugPrint(
+                      'Form submitted: role=$selectedRole experience=$selectedExperience '
+                      'permission=$selectedPermission rating=$userRating comments=${_commentsController.text}',
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF1ECBFF),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                ),
+                child: const Text('Submit', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+
+          ],
+        ),
       ),
     );
   }
