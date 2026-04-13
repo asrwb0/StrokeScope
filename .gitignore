@@ -210,3 +210,5 @@ weights/
 uploads/
 heatmaps/
 *.dcmvenv/
+
+.dart_tool/
