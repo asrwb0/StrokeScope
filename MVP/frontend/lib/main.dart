@@ -63,6 +63,7 @@ class NavBar extends StatelessWidget {
               letterSpacing: 1.5,
             ),
           ),
+          const Spacer(),
           _NavLink(label: 'Home', path: '/', currentPath: currentPath),
           _NavLink(
             label: 'Analyze',
