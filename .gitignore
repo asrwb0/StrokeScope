@@ -212,3 +212,8 @@ heatmaps/
 *.dcmvenv/
 
 .dart_tool/
+
+# environment variables
+**/.env
+.env
+.env.*
