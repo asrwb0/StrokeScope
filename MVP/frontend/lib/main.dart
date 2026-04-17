@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:dotted_border/dotted_border.dart';
-import 'package:dio/dio.dart';
 
 void main() {
   runApp(const StrokeScopeApp());
@@ -94,9 +93,15 @@ class _NavLink extends StatelessWidget {
 
     return GestureDetector(
       onTap: () => context.go(path),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 15)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isActive ? const Color(0xFF1ECBFF) : Colors.white70,
+            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
       ),
     );
   }
@@ -142,7 +147,10 @@ class _HomePageState extends State<HomePage> {
                 Container(
                   decoration: BoxDecoration(
                     color: const Color(0xFF1A2B3C),
-                    border: Border.all(color: const Color(0xFF0A1F44), width: 3),
+                    border: Border.all(
+                      color: const Color(0xFF0A1F44),
+                      width: 3,
+                    ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   padding: const EdgeInsets.all(16),
@@ -386,7 +394,10 @@ class _HomePageState extends State<HomePage> {
                   margin: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1A2B3C),
-                    border: Border.all(color: const Color(0xFF0A1F44), width: 3),
+                    border: Border.all(
+                      color: const Color(0xFF0A1F44),
+                      width: 3,
+                    ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   padding: const EdgeInsets.all(16),
@@ -537,7 +548,10 @@ class InfoPage extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1A2B3C),
-                    border: Border.all(color: const Color(0xFF0A1F44), width: 3),
+                    border: Border.all(
+                      color: const Color(0xFF0A1F44),
+                      width: 3,
+                    ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   padding: const EdgeInsets.all(16),
@@ -554,7 +568,10 @@ class InfoPage extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1A2B3C),
-                    border: Border.all(color: const Color(0xFF0A1F44), width: 3),
+                    border: Border.all(
+                      color: const Color(0xFF0A1F44),
+                      width: 3,
+                    ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   padding: const EdgeInsets.all(16),
@@ -571,7 +588,10 @@ class InfoPage extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1A2B3C),
-                    border: Border.all(color: const Color(0xFF0A1F44), width: 3),
+                    border: Border.all(
+                      color: const Color(0xFF0A1F44),
+                      width: 3,
+                    ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   padding: const EdgeInsets.all(16),
@@ -599,7 +619,10 @@ class InfoPage extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1A2B3C),
-                    border: Border.all(color: const Color(0xFF0A1F44), width: 3),
+                    border: Border.all(
+                      color: const Color(0xFF0A1F44),
+                      width: 3,
+                    ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   padding: const EdgeInsets.all(16),
@@ -616,7 +639,10 @@ class InfoPage extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1A2B3C),
-                    border: Border.all(color: const Color(0xFF0A1F44), width: 3),
+                    border: Border.all(
+                      color: const Color(0xFF0A1F44),
+                      width: 3,
+                    ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   padding: const EdgeInsets.all(16),
@@ -644,7 +670,10 @@ class InfoPage extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1A2B3C),
-                    border: Border.all(color: const Color(0xFF0A1F44), width: 3),
+                    border: Border.all(
+                      color: const Color(0xFF0A1F44),
+                      width: 3,
+                    ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   padding: const EdgeInsets.all(16),
@@ -991,7 +1020,7 @@ class _StarRatingWidgetState extends State<StarRatingWidget> {
 
   Widget buildStar(final BuildContext context, final int index) {
     Icon icon;
-    if (index < rating) {
+    if (index < widget.initialRating) {
       icon = Icon(Icons.star, size: 24, color: widget.color);
     } else {
       icon = const Icon(Icons.star_border, size: 24, color: Colors.grey);
@@ -1082,9 +1111,7 @@ class _MyCustomFormState extends State<MyCustomForm> {
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: Theme.of(context).copyWith(
-        canvasColor: const Color(0xFF1A2B3C),
-      ),
+      data: Theme.of(context).copyWith(canvasColor: const Color(0xFF1A2B3C)),
       child: Form(
         key: _formKey,
         child: Column(
@@ -1097,15 +1124,25 @@ class _MyCustomFormState extends State<MyCustomForm> {
                 dropdownColor: const Color(0xFF1A2B3C),
                 style: const TextStyle(color: Colors.white),
                 decoration: _darkDropdownDecoration('Your role'),
-                hint: const Text('Select your role', style: TextStyle(color: Colors.white54)),
+                hint: const Text(
+                  'Select your role',
+                  style: TextStyle(color: Colors.white54),
+                ),
                 items: roleItems
-                    .map((value) => DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value, style: const TextStyle(color: Colors.white)),
-                        ))
+                    .map(
+                      (value) => DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(
+                          value,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    )
                     .toList(),
-                onChanged: (newValue) => setState(() => selectedRole = newValue),
-                validator: (value) => value == null ? 'Please choose a role' : null,
+                onChanged: (newValue) =>
+                    setState(() => selectedRole = newValue),
+                validator: (value) =>
+                    value == null ? 'Please choose a role' : null,
               ),
             ),
             Padding(
@@ -1128,7 +1165,8 @@ class _MyCustomFormState extends State<MyCustomForm> {
                       starCount: 5,
                       initialRating: userRating,
                       color: const Color(0xFF1ECBFF),
-                      onRatingChanged: (rating) => setState(() => userRating = rating),
+                      onRatingChanged: (rating) =>
+                          setState(() => userRating = rating),
                     ),
                   ],
                 ),
@@ -1141,15 +1179,25 @@ class _MyCustomFormState extends State<MyCustomForm> {
                 dropdownColor: const Color(0xFF1A2B3C),
                 style: const TextStyle(color: Colors.white),
                 decoration: _darkDropdownDecoration('Area of feedback'),
-                hint: const Text('Area of app you want to comment on', style: TextStyle(color: Colors.white54)),
+                hint: const Text(
+                  'Area of app you want to comment on',
+                  style: TextStyle(color: Colors.white54),
+                ),
                 items: aspectToComment
-                    .map((value) => DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value, style: const TextStyle(color: Colors.white)),
-                        ))
+                    .map(
+                      (value) => DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(
+                          value,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    )
                     .toList(),
-                onChanged: (newValue) => setState(() => selectedExperience = newValue),
-                validator: (value) => value == null ? 'Please select an area' : null,
+                onChanged: (newValue) =>
+                    setState(() => selectedExperience = newValue),
+                validator: (value) =>
+                    value == null ? 'Please select an area' : null,
               ),
             ),
             Padding(
@@ -1164,7 +1212,9 @@ class _MyCustomFormState extends State<MyCustomForm> {
                   hintText: 'Share your thoughts about this area...',
                   hintStyle: const TextStyle(color: Colors.white30),
                   alignLabelWithHint: true,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: const BorderSide(color: Colors.white30),
@@ -1184,15 +1234,26 @@ class _MyCustomFormState extends State<MyCustomForm> {
                 value: selectedPermission,
                 dropdownColor: const Color(0xFF1A2B3C),
                 style: const TextStyle(color: Colors.white),
-                decoration: _darkDropdownDecoration('Permission to use feedback'),
-                hint: const Text('Select permission', style: TextStyle(color: Colors.white54)),
+                decoration: _darkDropdownDecoration(
+                  'Permission to use feedback',
+                ),
+                hint: const Text(
+                  'Select permission',
+                  style: TextStyle(color: Colors.white54),
+                ),
                 items: permissionGranted
-                    .map((value) => DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value, style: const TextStyle(color: Colors.white)),
-                        ))
+                    .map(
+                      (value) => DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(
+                          value,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    )
                     .toList(),
-                onChanged: (newValue) => setState(() => selectedPermission = newValue),
+                onChanged: (newValue) =>
+                    setState(() => selectedPermission = newValue),
               ),
             ),
             Padding(
@@ -1204,14 +1265,29 @@ class _MyCustomFormState extends State<MyCustomForm> {
                       'Form submitted: role=$selectedRole experience=$selectedExperience '
                       'permission=$selectedPermission rating=$userRating comments=${_commentsController.text}',
                     );
+                    _formKey.currentState
+                        ?.reset(); // clears dropdown validators
+                    _commentsController.clear(); // clears the text field
+                    setState(() {
+                      selectedRole = null;
+                      selectedExperience = null;
+                      selectedPermission = null;
+                      userRating = 0.0;
+                    });
                   }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1ECBFF),
                   foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 14,
+                  ),
                 ),
-                child: const Text('Submit', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Submit',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],
