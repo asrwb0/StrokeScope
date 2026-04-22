@@ -781,11 +781,7 @@ class _AnalyzePageState extends State<AnalyzePage> {
           const SizedBox(height: 8),
           RichText(
             text: const TextSpan(
-              style: TextStyle(
-                color: Colors.black54,
-                fontSize: 12,
-                height: 1.5,
-              ),
+              style: TextStyle(color: Colors.black54, fontSize: 12, height: 1.5),
               children: [
                 TextSpan(text: 'Model trained on '),
                 TextSpan(
@@ -820,6 +816,43 @@ class _AnalyzePageState extends State<AnalyzePage> {
     );
   }
 
+  Widget _buildResultsBox() {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 320),
+      decoration: BoxDecoration(
+        color: kMaroonLight.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: kMaroon, width: 1.5),
+      ),
+      child: const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.document_scanner_outlined, color: kMaroon, size: 48),
+              SizedBox(height: 12),
+              Text(
+                'Detection results will appear here after analysis',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 6),
+              Text(
+                'Await results...',
+                style: TextStyle(color: Colors.black45, fontSize: 14),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -831,8 +864,8 @@ class _AnalyzePageState extends State<AnalyzePage> {
           child: SafeArea(child: NavBar(currentPath: '/analyze')),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -846,9 +879,10 @@ class _AnalyzePageState extends State<AnalyzePage> {
               style: TextStyle(color: Colors.black54, fontSize: 18),
             ),
             const SizedBox(height: 24),
-            Expanded(
+          
+            IntrinsicHeight(
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
                     child: Column(
@@ -864,40 +898,9 @@ class _AnalyzePageState extends State<AnalyzePage> {
                 ],
               ),
             ),
+            const SizedBox(height: 24),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildResultsBox() {
-    return Container(
-      height: double.infinity,
-      decoration: BoxDecoration(
-        color: kMaroonLight.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: kMaroon, width: 1.5),
-      ),
-      child: const Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.document_scanner_outlined, color: kMaroon, size: 48),
-          SizedBox(height: 12),
-          Text(
-            'Detection results will appear here after analysis',
-            style: TextStyle(
-              color: Colors.black87,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 6),
-          Text(
-            'Await results...',
-            style: TextStyle(color: Colors.black45, fontSize: 14),
-          ),
-        ],
       ),
     );
   }
