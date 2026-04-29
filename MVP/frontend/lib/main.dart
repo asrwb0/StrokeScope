@@ -3,8 +3,15 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const StrokeScopeApp());
 }
 
@@ -12,11 +19,9 @@ final _router = GoRouter(
   routes: [
     GoRoute(path: '/', builder: (context, state) => const HomePage()),
     GoRoute(path: '/analyze', builder: (context, state) => const AnalyzePage()),
-    GoRoute(
-      path: '/feedback',
-      builder: (context, state) => const FeedbackPage(),
-    ),
+    GoRoute(path: '/feedback', builder: (context, state) => const FeedbackPage()),
     GoRoute(path: '/info', builder: (context, state) => const InfoPage()),
+    GoRoute(path: '/about', builder: (context, state) => const AboutUsPage()),
   ],
 );
 
@@ -38,6 +43,7 @@ class StrokeScopeApp extends StatelessWidget {
     );
   }
 }
+
 
 class AppCard extends StatelessWidget {
   final Widget child;
@@ -106,16 +112,9 @@ class NavBar extends StatelessWidget {
           ),
           const Spacer(),
           _NavLink(label: 'Home', path: '/', currentPath: currentPath),
-          _NavLink(
-            label: 'Analyze',
-            path: '/analyze',
-            currentPath: currentPath,
-          ),
-          _NavLink(
-            label: 'Feedback',
-            path: '/feedback',
-            currentPath: currentPath,
-          ),
+          _NavLink(label: 'Analyze', path: '/analyze', currentPath: currentPath),
+          _NavLink(label: 'Feedback', path: '/feedback', currentPath: currentPath),
+          _NavLink(label: 'About Us', path: '/about', currentPath: currentPath),
         ],
       ),
     );
@@ -178,9 +177,6 @@ class _NavLinkState extends State<_NavLink> {
   }
 }
 
-// ─────────────────────────────────────────────
-// APP BUTTON (replaces _GlowButton)
-// ─────────────────────────────────────────────
 class AppButton extends StatefulWidget {
   final String label;
   final VoidCallback onPressed;
@@ -218,6 +214,8 @@ class _AppButtonState extends State<AppButton> {
   }
 }
 
+
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -253,15 +251,25 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 275),
-              // Hero title card
-              AppCard(
-                child: Text(
-                  'Stroke Detection Platform',
-                  style: GoogleFonts.bebasNeue(fontSize: 40, color: kWhite),
+              const SizedBox(height: 80),
+              Text(
+                'STROKE SCOPE',
+                style: GoogleFonts.bebasNeue(
+                  fontSize: 72,
+                  color: kMaroonDark,
+                  letterSpacing: 4,
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 8),
+              Text(
+                'AI-Powered Hemorrhagic Stroke Detection',
+                style: GoogleFonts.jost(
+                  fontSize: 20,
+                  color: Colors.black54,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(height: 32),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -273,265 +281,519 @@ class _HomePageState extends State<HomePage> {
                   AppButton(
                     label: 'Learn More',
                     onPressed: () => _scrollController.animateTo(
-                      600,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.ease,
+                      500,
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeInOut,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 60),
+              const SizedBox(height: 80),
+
+            
               Container(height: 2, color: kMaroon),
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
               Text(
-                'HOW DOES OUR APP WORK?',
+                'HOW IT WORKS',
                 style: GoogleFonts.bebasNeue(
-                  fontSize: 60,
+                  fontSize: 52,
                   color: kMaroonDark,
                   decoration: TextDecoration.underline,
                   decorationColor: kMaroonDark,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
+              Text(
+                'Three simple steps to fast, accessible stroke screening.',
+                style: GoogleFonts.jost(fontSize: 16, color: Colors.black54),
+              ),
+              const SizedBox(height: 28),
               Wrap(
                 alignment: WrapAlignment.center,
                 spacing: 16,
                 runSpacing: 16,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  AppCard(
-                    width: 200,
-                    height: 100,
-                    child: Center(
-                      child: Text(
-                        'Learn',
-                        style: GoogleFonts.bebasNeue(
-                          fontSize: 28,
-                          color: kWhite,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
+                  _StepCard(
+                    number: '01',
+                    title: 'Upload',
+                    description: 'Submit a CT scan\nin DICOM, JPEG, or PNG format.',
+                    icon: Icons.upload_file_rounded,
                   ),
-                  Text(
-                    '➡',
-                    style: GoogleFonts.bebasNeue(fontSize: 60, color: kMaroon),
+                  const _ArrowDivider(),
+                  _StepCard(
+                    number: '02',
+                    title: 'Detect',
+                    description: 'Our model analyzes\nthe scan for hemorrhagic markers.',
+                    icon: Icons.psychology_alt_rounded,
                   ),
-                  AppCard(
-                    width: 200,
-                    height: 100,
-                    child: Center(
-                      child: Text(
-                        'Upload',
-                        style: GoogleFonts.bebasNeue(
-                          fontSize: 28,
-                          color: kWhite,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    '➡',
-                    style: GoogleFonts.bebasNeue(fontSize: 60, color: kMaroon),
-                  ),
-                  AppCard(
-                    width: 200,
-                    height: 100,
-                    child: Center(
-                      child: Text(
-                        'Detect',
-                        style: GoogleFonts.bebasNeue(
-                          fontSize: 28,
-                          color: kWhite,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    '➡',
-                    style: GoogleFonts.bebasNeue(
-                      fontSize: 60,
-                      color: kMaroonDark,
-                    ),
-                  ),
-                  AppCard(
-                    width: 200,
-                    height: 100,
-                    child: Center(
-                      child: Text(
-                        'Results',
-                        style: GoogleFonts.bebasNeue(
-                          fontSize: 28,
-                          color: kWhite,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
+                  const _ArrowDivider(),
+                  _StepCard(
+                    number: '03',
+                    title: 'Results',
+                    description: 'Receive a clear,\ninstant classification result.',
+                    icon: Icons.fact_check_rounded,
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 48),
+
+           
               Container(height: 2, color: kMaroon),
-              const SizedBox(height: 14),
+              const SizedBox(height: 28),
               Text(
-                'DID YOU KNOW?',
+                'WHY IT MATTERS',
                 style: GoogleFonts.bebasNeue(
-                  fontSize: 60,
+                  fontSize: 52,
                   color: kMaroonDark,
                   decoration: TextDecoration.underline,
                   decorationColor: kMaroonDark,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 28),
               Wrap(
                 alignment: WrapAlignment.center,
-                spacing: 16,
-                runSpacing: 16,
+                spacing: 20,
+                runSpacing: 20,
                 children: [
-                  AppCard(
-                    width: 400,
-                    height: 200,
-                    child: Center(
-                      child: Text(
-                        'A "hemorrhage" is the medical term for bleeding inside your body.',
-                        style: GoogleFonts.bebasNeue(
-                          fontSize: 28,
-                          color: kWhite,
-                        ),
-                        textAlign: TextAlign.center,
-                        softWrap: true,
-                      ),
-                    ),
+                  _StatCard(
+                    stat: 'Every 40s',
+                    detail: 'someone in the U.S. has a stroke',
+                    icon: Icons.timer_rounded,
                   ),
-                  AppCard(
-                    width: 400,
-                    height: 200,
-                    child: Center(
-                      child: Text(
-                        'A stroke adds extra pressure inside your brain, which can damage or kill brain cells.',
-                        style: GoogleFonts.bebasNeue(
-                          fontSize: 28,
-                          color: kWhite,
-                        ),
-                        textAlign: TextAlign.center,
-                        softWrap: true,
-                      ),
-                    ),
+                  _StatCard(
+                    stat: '80%',
+                    detail: 'of strokes are preventable with early detection',
+                    icon: Icons.health_and_safety_rounded,
                   ),
-                  AppCard(
-                    width: 400,
-                    height: 200,
-                    child: Center(
-                      child: Text(
-                        'Every 40 seconds, an individual suffers from a stroke in the U.S., with a death occurring every three minutes (CDC, 2025)',
-                        style: GoogleFonts.bebasNeue(
-                          fontSize: 28,
-                          color: kWhite,
-                        ),
-                        textAlign: TextAlign.center,
-                        softWrap: true,
-                      ),
-                    ),
+                  _StatCard(
+                    stat: '−11 mo',
+                    detail: 'of healthy life lost per 10-min treatment delay',
+                    icon: Icons.trending_down_rounded,
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
-              Container(height: 2, color: kMaroon),
-              const SizedBox(height: 14),
-              Text(
-                'WHAT IS A HEMORRHAGIC STROKE?',
-                style: GoogleFonts.bebasNeue(
-                  fontSize: 60,
-                  color: kMaroonDark,
-                  decoration: TextDecoration.underline,
-                  decorationColor: kMaroonDark,
+              const SizedBox(height: 36),
+
+        
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+                decoration: BoxDecoration(
+                  color: kMaroon,
+                  borderRadius: BorderRadius.circular(16),
                 ),
-              ),
-              const SizedBox(height: 16),
-              AppCard(
-                width: 10000,
-                height: 200,
-                child: Center(
-                  child: Text(
-                    'Hemorrhagic strokes are the result of a ruptured blood vessel in the brain, either intracerebral (inside the brain) or subarachnoid (between the brain and the skull). In these cases, medical professionals prescribe medication intended to lower brain pressure and swelling, sometimes with the use of blood thinners ("A Neurosurgeon\'s Guide to Stroke," n.d.). Hemorrhagic strokes make up twenty percent of all strokes (NINDS Recognizes Stroke Awareness Month | National Institute of Neurological Disorders and Stroke, 2024).',
-                    style: GoogleFonts.bebasNeue(fontSize: 28, color: kWhite),
-                    textAlign: TextAlign.center,
-                    softWrap: true,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              AppButton(
-                label: 'Click here to learn more!',
-                onPressed: () => context.go('/info'),
-              ),
-              const SizedBox(height: 24),
-              Container(height: 2, color: kMaroon),
-              const SizedBox(height: 14),
-              Text(
-                'WHAT IS OUR GOAL?',
-                style: GoogleFonts.bebasNeue(
-                  fontSize: 60,
-                  color: kMaroonDark,
-                  decoration: TextDecoration.underline,
-                  decorationColor: kMaroonDark,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 16,
-                runSpacing: 16,
-                children: [
-                  AppCard(
-                    width: 200,
-                    height: 100,
-                    child: Center(
-                      child: Text(
-                        'Education',
-                        style: GoogleFonts.bebasNeue(
-                          fontSize: 28,
-                          color: kWhite,
-                        ),
-                        textAlign: TextAlign.center,
+                child: Column(
+                  children: [
+                    Text(
+                      'READY TO GET STARTED?',
+                      style: GoogleFonts.bebasNeue(
+                        fontSize: 40,
+                        color: kWhite,
+                        letterSpacing: 2,
                       ),
                     ),
-                  ),
-                  AppCard(
-                    width: 200,
-                    height: 100,
-                    child: Center(
-                      child: Text(
-                        'Accessibility',
-                        style: GoogleFonts.bebasNeue(
-                          fontSize: 28,
-                          color: kWhite,
-                        ),
-                        textAlign: TextAlign.center,
+                    const SizedBox(height: 8),
+                    Text(
+                      'Upload a scan now or explore the science behind our tool.',
+                      style: GoogleFonts.jost(
+                        fontSize: 16,
+                        color: Color(0xFFFAFAFA),
                       ),
                     ),
-                  ),
-                  AppCard(
-                    width: 200,
-                    height: 100,
-                    child: Center(
-                      child: Text(
-                        'Speed',
-                        style: GoogleFonts.bebasNeue(
-                          fontSize: 28,
-                          color: kWhite,
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AppButton(
+                          label: 'Analyze a Scan',
+                          onPressed: () => context.go('/analyze'),
                         ),
-                        textAlign: TextAlign.center,
-                      ),
+                        const SizedBox(width: 12),
+                        AppButton(
+                          label: 'Learn the Science',
+                          onPressed: () => context.go('/info'),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 48),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+
+class _StepCard extends StatelessWidget {
+  final String number;
+  final String title;
+  final String description;
+  final IconData icon;
+
+  const _StepCard({
+    required this.number,
+    required this.title,
+    required this.description,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 200,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: kMaroon,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kMaroonDark, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            number,
+            style: GoogleFonts.bebasNeue(
+              fontSize: 36,
+              color: kWhite.withOpacity(0.3),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Icon(icon, color: kWhite, size: 36),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: GoogleFonts.bebasNeue(fontSize: 26, color: kWhite),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            description,
+            style: GoogleFonts.jost(
+              fontSize: 13,
+              color: kWhite.withOpacity(0.75),
+              height: 1.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ArrowDivider extends StatelessWidget {
+  const _ArrowDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      '›',
+      style: TextStyle(
+        fontSize: 52,
+        color: kMaroon.withOpacity(0.5),
+        fontWeight: FontWeight.w200,
+      ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final String stat;
+  final String detail;
+  final IconData icon;
+
+  const _StatCard({
+    required this.stat,
+    required this.detail,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 220,
+      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+      decoration: BoxDecoration(
+        color: kWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kMaroon, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: kMaroon.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: kMaroon, size: 32),
+          const SizedBox(height: 12),
+          Text(
+            stat,
+            style: GoogleFonts.bebasNeue(fontSize: 36, color: kMaroonDark),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            detail,
+            style: GoogleFonts.jost(
+              fontSize: 13,
+              color: Colors.black54,
+              height: 1.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+class AboutUsPage extends StatelessWidget {
+  const AboutUsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: kWhite,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(68),
+        child: Material(
+          color: kNavBg,
+          child: SafeArea(child: NavBar(currentPath: '/about')),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const SizedBox(height: 20),
+            Container(height: 2, color: kMaroon),
+            const SizedBox(height: 20),
+            Text(
+              'ABOUT US',
+              style: GoogleFonts.bebasNeue(
+                fontSize: 60,
+                color: kMaroonDark,
+                decoration: TextDecoration.underline,
+                decorationColor: kMaroonDark,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Who we are and why we built StrokeScope.',
+              style: GoogleFonts.jost(fontSize: 18, color: Colors.black54),
+            ),
+            const SizedBox(height: 32),
+
+            _SectionHeader(title: 'OUR MISSION'),
+            const SizedBox(height: 16),
+            AppCard(
+              width: 1100,
+              child: Text(
+                'StrokeScope was built on a simple belief: that life-saving stroke detection should not be gated by geography, wealth, or wait times. We set out to create a fast, accessible, and educational platform that puts preliminary CT scan analysis in the hands of anyone who needs it — while always encouraging users to follow up with a qualified medical professional.',
+                style: GoogleFonts.jost(fontSize: 18, color: kWhite, height: 1.7),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 36),
+
+            _SectionHeader(title: 'OUR GOALS'),
+            const SizedBox(height: 16),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 20,
+              runSpacing: 20,
+              children: [
+                _GoalCard(
+                  icon: Icons.school_rounded,
+                  title: 'Education',
+                  description:
+                      'Empower patients and families with clear, accessible information about stroke types, symptoms, and the importance of rapid treatment.',
+                ),
+                _GoalCard(
+                  icon: Icons.public_rounded,
+                  title: 'Accessibility',
+                  description:
+                      'Remove barriers to preliminary stroke screening, especially for individuals in resource-limited areas who lack immediate specialist access.',
+                ),
+                _GoalCard(
+                  icon: Icons.bolt_rounded,
+                  title: 'Speed',
+                  description:
+                      'Reduce dangerous delays in detection. Every minute matters — our tool delivers instant results to help inform faster medical decisions.',
+                ),
+              ],
+            ),
+            const SizedBox(height: 36),
+
+            _SectionHeader(title: 'WHAT MOTIVATED US'),
+            const SizedBox(height: 16),
+            AppCard(
+              width: 1100,
+              child: Text(
+                'In the current healthcare system, the average stroke patient must book a hospital appointment, get referred to a specialist, wait for imaging approval, and then wait again for results — a cycle that can span days or even weeks. For a condition where every 10-minute delay costs 11 months of healthy life, this process is unacceptable. We built StrokeScope to be a first line of insight, bridging the gap between a patient\'s concern and a clinician\'s diagnosis.',
+                style: GoogleFonts.jost(fontSize: 18, color: kWhite, height: 1.7),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 36),
+
+            _SectionHeader(title: 'THE TEAM'),
+            const SizedBox(height: 16),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 20,
+              runSpacing: 20,
+              children: [
+                _TeamCard(name: 'Team Member', role: 'ML & Model Training'),
+                _TeamCard(name: 'Team Member', role: 'Frontend & UI Design'),
+                _TeamCard(name: 'Team Member', role: 'Backend & Firebase'),
+                _TeamCard(name: 'Team Member', role: 'Research & Documentation'),
+              ],
+            ),
+            const SizedBox(height: 48),
+
+            Container(height: 2, color: kMaroon),
+            const SizedBox(height: 28),
+            AppButton(
+              label: 'Try the Analyzer',
+              onPressed: () => context.go('/analyze'),
+            ),
+            const SizedBox(height: 40),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  const _SectionHeader({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      title,
+      style: GoogleFonts.bebasNeue(
+        fontSize: 42,
+        color: kMaroonDark,
+        decoration: TextDecoration.underline,
+        decorationColor: kMaroonDark,
+        letterSpacing: 1.5,
+      ),
+    );
+  }
+}
+
+class _GoalCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String description;
+
+  const _GoalCard({
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 280,
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: kMaroon,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kMaroonDark, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: kWhite, size: 40),
+          const SizedBox(height: 14),
+          Text(
+            title,
+            style: GoogleFonts.bebasNeue(fontSize: 28, color: kWhite),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            description,
+            style: GoogleFonts.jost(
+              fontSize: 14,
+              color: kWhite.withOpacity(0.8),
+              height: 1.6,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TeamCard extends StatelessWidget {
+  final String name;
+  final String role;
+
+  const _TeamCard({required this.name, required this.role});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 200,
+      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+      decoration: BoxDecoration(
+        color: kWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kMaroon, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: kMaroon.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 32,
+            backgroundColor: kMaroon,
+            child: const Icon(Icons.person_rounded, color: kWhite, size: 36),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            name,
+            style: GoogleFonts.bebasNeue(fontSize: 20, color: kMaroonDark),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            role,
+            style: GoogleFonts.jost(fontSize: 13, color: Colors.black54),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -548,7 +810,7 @@ class InfoPage extends StatelessWidget {
         preferredSize: const Size.fromHeight(68),
         child: Material(
           color: kNavBg,
-          child: const SafeArea(child: NavBar(currentPath: '/')),
+          child: const SafeArea(child: NavBar(currentPath: '/info')),
         ),
       ),
       body: SingleChildScrollView(
@@ -658,6 +920,7 @@ class InfoPage extends StatelessWidget {
     );
   }
 }
+
 
 class AnalyzePage extends StatefulWidget {
   const AnalyzePage({super.key});
@@ -879,7 +1142,6 @@ class _AnalyzePageState extends State<AnalyzePage> {
               style: TextStyle(color: Colors.black54, fontSize: 18),
             ),
             const SizedBox(height: 24),
-          
             IntrinsicHeight(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -905,6 +1167,7 @@ class _AnalyzePageState extends State<AnalyzePage> {
     );
   }
 }
+
 
 class FeedbackPage extends StatelessWidget {
   const FeedbackPage({super.key});
@@ -943,6 +1206,7 @@ class FeedbackPage extends StatelessWidget {
   }
 }
 
+
 class StarRatingWidget extends StatefulWidget {
   final int starCount;
   final double initialRating;
@@ -972,7 +1236,7 @@ class _StarRatingWidgetState extends State<StarRatingWidget> {
 
   Widget buildStar(BuildContext context, int index) {
     Icon icon;
-    if (index < widget.initialRating) {
+    if (index < rating) {
       icon = Icon(Icons.star, size: 24, color: widget.color);
     } else {
       icon = const Icon(Icons.star_border, size: 24, color: Colors.grey);
@@ -997,6 +1261,7 @@ class _StarRatingWidgetState extends State<StarRatingWidget> {
     );
   }
 }
+
 
 class MyCustomForm extends StatefulWidget {
   const MyCustomForm({super.key});
@@ -1060,9 +1325,9 @@ class _MyCustomFormState extends State<MyCustomForm> {
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: Theme.of(
-        context,
-      ).copyWith(canvasColor: kMaroonLight.withOpacity(0.08)),
+      data: Theme.of(context).copyWith(
+        canvasColor: kMaroonLight.withOpacity(0.08),
+      ),
       child: Form(
         key: _formKey,
         child: Column(
@@ -1189,21 +1454,30 @@ class _MyCustomFormState extends State<MyCustomForm> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
               child: AppButton(
                 label: 'Submit',
-                onPressed: () {
+                onPressed: () async {
                   if (_formKey.currentState?.validate() ?? false) {
-                    debugPrint(
-                      'Form submitted: role=$selectedRole experience=$selectedExperience '
-                      'permission=$selectedPermission rating=$userRating comments=${_commentsController.text}',
-                    );
-                    _formKey.currentState
-                        ?.reset(); // clears dropdown validators
-                    _commentsController.clear(); // clears the text field
+                    await FirebaseFirestore.instance.collection('feedback').add({
+                      'role': selectedRole,
+                      'rating': userRating,
+                      'area': selectedExperience,
+                      'comments': _commentsController.text,
+                      'permission': selectedPermission,
+                      'submittedAt': FieldValue.serverTimestamp(),
+                      'consentGiven': selectedPermission?.startsWith('Yes') ?? false,
+                    });
+                    _formKey.currentState?.reset();
+                    _commentsController.clear();
                     setState(() {
                       selectedRole = null;
                       selectedExperience = null;
                       selectedPermission = null;
                       userRating = 0.0;
                     });
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Feedback submitted!')),
+                      );
+                    }
                   }
                 },
               ),
