@@ -262,7 +262,7 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 8),
               Text(
-                'AI-Powered Hemorrhagic Stroke Detection',
+                'AI-Powered Hemorrhagic Stroke Analysis',
                 style: GoogleFonts.jost(
                   fontSize: 20,
                   color: Colors.black54,
@@ -318,21 +318,18 @@ class _HomePageState extends State<HomePage> {
                     number: '01',
                     title: 'Upload',
                     description: 'Submit a CT scan\nin DICOM, JPEG, or PNG format.',
-                    icon: Icons.upload_file_rounded,
                   ),
                   const _ArrowDivider(),
                   _StepCard(
                     number: '02',
                     title: 'Detect',
                     description: 'Our model analyzes\nthe scan for hemorrhagic markers.',
-                    icon: Icons.psychology_alt_rounded,
                   ),
                   const _ArrowDivider(),
                   _StepCard(
                     number: '03',
                     title: 'Results',
                     description: 'Receive a clear,\ninstant classification result.',
-                    icon: Icons.fact_check_rounded,
                   ),
                 ],
               ),
@@ -363,12 +360,12 @@ class _HomePageState extends State<HomePage> {
                   ),
                   _StatCard(
                     stat: '80%',
-                    detail: 'of strokes are preventable with early detection',
+                    detail: 'of strokes are preventable with early analysis',
                     icon: Icons.health_and_safety_rounded,
                   ),
                   _StatCard(
-                    stat: '−11 mo',
-                    detail: 'of healthy life lost per 10-min treatment delay',
+                    stat: '−11 months',
+                    detail: 'of life lost every 10 minutes of delayed treatment',
                     icon: Icons.trending_down_rounded,
                   ),
                 ],
@@ -386,7 +383,7 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   children: [
                     Text(
-                      'READY TO GET STARTED?',
+                      'TRY STROKE SCOPE TODAY',
                       style: GoogleFonts.bebasNeue(
                         fontSize: 40,
                         color: kWhite,
@@ -395,7 +392,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Upload a scan now or explore the science behind our tool.',
+                      'Upload a scan now or learn more about strokes',
                       style: GoogleFonts.jost(
                         fontSize: 16,
                         color: Color(0xFFFAFAFA),
@@ -411,7 +408,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                         const SizedBox(width: 12),
                         AppButton(
-                          label: 'Learn the Science',
+                          label: 'Learn More',
                           onPressed: () => context.go('/info'),
                         ),
                       ],
@@ -433,13 +430,13 @@ class _StepCard extends StatelessWidget {
   final String number;
   final String title;
   final String description;
-  final IconData icon;
+  final IconData? icon;
 
   const _StepCard({
     required this.number,
     required this.title,
     required this.description,
-    required this.icon,
+    this.icon,
   });
 
   @override
@@ -469,7 +466,7 @@ class _StepCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          Icon(icon, color: kWhite, size: 36),
+          if (icon != null) Icon(icon, color: kWhite, size: 36),
           const SizedBox(height: 12),
           Text(
             title,
@@ -510,12 +507,12 @@ class _ArrowDivider extends StatelessWidget {
 class _StatCard extends StatelessWidget {
   final String stat;
   final String detail;
-  final IconData icon;
+  final IconData? icon;
 
   const _StatCard({
     required this.stat,
     required this.detail,
-    required this.icon,
+    this.icon,
   });
 
   @override
@@ -537,7 +534,7 @@ class _StatCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(icon, color: kMaroon, size: 32),
+          if (icon != null) Icon(icon, color: kMaroon, size: 32),
           const SizedBox(height: 12),
           Text(
             stat,
@@ -603,7 +600,7 @@ class AboutUsPage extends StatelessWidget {
             AppCard(
               width: 1100,
               child: Text(
-                'StrokeScope was built on a simple belief: that life-saving stroke detection should not be gated by geography, wealth, or wait times. We set out to create a fast, accessible, and educational platform that puts preliminary CT scan analysis in the hands of anyone who needs it — while always encouraging users to follow up with a qualified medical professional.',
+                'StrokeScope is built on a simple goal: Life-saving stroke analysis should be accesable regardless of where a patient lives, their wealth and income, or increased wait times. The team set out to create a fast, accessible, and educational platform that uses a CT scan analysis algorithim that is accessible to anyone who needs it, while continuing to recommend users to follow up with a medical professional. ',
                 style: GoogleFonts.jost(fontSize: 18, color: kWhite, height: 1.7),
                 textAlign: TextAlign.center,
               ),
@@ -621,19 +618,19 @@ class AboutUsPage extends StatelessWidget {
                   icon: Icons.school_rounded,
                   title: 'Education',
                   description:
-                      'Empower patients and families with clear, accessible information about stroke types, symptoms, and the importance of rapid treatment.',
+                      'Assist the general public, students/researchers, and medical professionals in experimenting with and understanding CT imaging results in real time',
                 ),
                 _GoalCard(
                   icon: Icons.public_rounded,
                   title: 'Accessibility',
                   description:
-                      'Remove barriers to preliminary stroke screening, especially for individuals in resource-limited areas who lack immediate specialist access.',
+                      'Expand imaging software to underprivileged or local clinics that may not have the tools or money to use current resources',
                 ),
                 _GoalCard(
                   icon: Icons.bolt_rounded,
                   title: 'Speed',
                   description:
-                      'Reduce dangerous delays in detection. Every minute matters — our tool delivers instant results to help inform faster medical decisions.',
+                      'Reduce the time between brain scan analysis and action to prevent delays in treatment and permanent damage',
                 ),
               ],
             ),
@@ -644,26 +641,11 @@ class AboutUsPage extends StatelessWidget {
             AppCard(
               width: 1100,
               child: Text(
-                'In the current healthcare system, the average stroke patient must book a hospital appointment, get referred to a specialist, wait for imaging approval, and then wait again for results — a cycle that can span days or even weeks. For a condition where every 10-minute delay costs 11 months of healthy life, this process is unacceptable. We built StrokeScope to be a first line of insight, bridging the gap between a patient\'s concern and a clinician\'s diagnosis.',
+                'The current healthcare system lacks accessibility to medical professionals on a small timeline, with the average stroke patient needing to book an appointment, get referred to a specialist, wait for the imaging approval, then wait again for the results. This cycle spans days or even weeks. For a condition where every 10-minute delay costs 11 healthy living months, the delay is simply risking too many lives. We built StrokeScope to be a first line of information, bridging the gap between a patient\’s concern and the first steps to a diagnosis.',
                 style: GoogleFonts.jost(fontSize: 18, color: kWhite, height: 1.7),
                 textAlign: TextAlign.center,
               ),
-            ),
-            const SizedBox(height: 36),
-
-            _SectionHeader(title: 'THE TEAM'),
-            const SizedBox(height: 16),
-            Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 20,
-              runSpacing: 20,
-              children: [
-                _TeamCard(name: 'Team Member', role: 'ML & Model Training'),
-                _TeamCard(name: 'Team Member', role: 'Frontend & UI Design'),
-                _TeamCard(name: 'Team Member', role: 'Backend & Firebase'),
-                _TeamCard(name: 'Team Member', role: 'Research & Documentation'),
-              ],
-            ),
+            ), 
             const SizedBox(height: 48),
 
             Container(height: 2, color: kMaroon),
@@ -700,12 +682,12 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _GoalCard extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
   final String title;
   final String description;
 
   const _GoalCard({
-    required this.icon,
+    this.icon,
     required this.title,
     required this.description,
   });
@@ -729,7 +711,7 @@ class _GoalCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(icon, color: kWhite, size: 40),
+          if (icon != null) Icon(icon, color: kWhite, size: 40),
           const SizedBox(height: 14),
           Text(
             title,
@@ -754,8 +736,9 @@ class _GoalCard extends StatelessWidget {
 class _TeamCard extends StatelessWidget {
   final String name;
   final String role;
+  final IconData? icon;
 
-  const _TeamCard({required this.name, required this.role});
+  const _TeamCard({required this.name, required this.role, this.icon  = Icons.person_rounded });
 
   @override
   Widget build(BuildContext context) {
@@ -844,7 +827,7 @@ class InfoPage extends StatelessWidget {
               AppCard(
                 width: 1200,
                 child: Text(
-                  'Despite their ubiquitously negative effects, not all strokes fall under the same category. As shown in Figure 1, there are two main types of strokes, both of which require vastly different courses of medical treatment. First, hemorrhagic strokes are the result of a ruptured blood vessel in the brain, either intracerebral (inside the brain) or subarachnoid (between the brain and the skull). In these cases, medical professionals prescribe medication intended to lower brain pressure and swelling, sometimes with the use of blood thinners ("A Neurosurgeon\'s Guide to Stroke," n.d.). Hemorrhagic and ischemic strokes make up twenty percent and eighty percent of all strokes, respectively (NINDS Recognizes Stroke Awareness Month | National Institute of Neurological Disorders and Stroke, 2024). Ischemic strokes, unlike hemorrhagic ones, are the result of vessel blockage (in the form of clots or plaque) that restricts the flow of blood to the brain. Treatment plans for these patients may include a catheter-based procedure to remove the clot, or "clot-buster" medications that break down the protein that binds blood together (NINDS Recognizes Stroke Awareness Month | National Institute of Neurological Disorders and Stroke, 2024). Although more common, some ischemic strokes appear to be "mini" and harmless; these are coined as transient ischemic attacks (TIA), which can actually serve as a life-threatening symptom for more imminent events (Friends, 2025). Thus, early detection of strokes is the biggest preventative measure, as 80% of these occurrences can be averted (May Is American Stroke Month, n.d.).',
+                  'Despite their ubiquitously negative effects, not all strokes fall under the same category. As shown in Figure 1, there are two main types of strokes, both of which require vastly different courses of medical treatment. First, hemorrhagic strokes are the result of a ruptured blood vessel in the brain, either intracerebral (inside the brain) or subarachnoid (between the brain and the skull). In these cases, medical professionals prescribe medication intended to lower brain pressure and swelling, sometimes with the use of blood thinners ("A Neurosurgeon\'s Guide to Stroke," n.d.). Hemorrhagic and ischemic strokes make up twenty percent and eighty percent of all strokes, respectively (NINDS Recognizes Stroke Awareness Month | National Institute of Neurological Disorders and Stroke, 2024). Ischemic strokes, unlike hemorrhagic ones, are the result of vessel blockage (in the form of clots or plaque) that restricts the flow of blood to the brain. Treatment plans for these patients may include a catheter-based procedure to remove the clot, or "clot-buster" medications that break down the protein that binds blood together (NINDS Recognizes Stroke Awareness Month | National Institute of Neurological Disorders and Stroke, 2024). Although more common, some ischemic strokes appear to be "mini" and harmless; these are coined as transient ischemic attacks (TIA), which can actually serve as a life-threatening symptom for more imminent events (Friends, 2025). Thus, early analysis of strokes is the biggest preventative measure, as 80% of these occurrences can be averted (May Is American Stroke Month, n.d.).',
                   style: GoogleFonts.jost(fontSize: 20, color: kWhite),
                   textAlign: TextAlign.center,
                   softWrap: true,
@@ -906,7 +889,7 @@ class InfoPage extends StatelessWidget {
               AppCard(
                 width: 1200,
                 child: Text(
-                  'It is this very cycle that jeopardizes patient health. For a condition in which every second counts, this lengthy process actively diminishes an individual\'s chance of a full recovery. In fact, in 2021, the American Stroke Association conducted a study to determine the effects of delayed treatment on the lifespan of severe stroke patients. The study, conducted around 406 individuals with life-threatening artery blockages, revealed that each 10-minute delay in treatment resulted in a loss of eleven months of healthy life (Even Short Delays in the ER May Reduce the Lifespan of Stroke Survivors, n.d.). Thus, rapid detection is vital to stroke recovery.',
+                  'It is this very cycle that jeopardizes patient health. For a condition in which every second counts, this lengthy process actively diminishes an individual\'s chance of a full recovery. In fact, in 2021, the American Stroke Association conducted a study to determine the effects of delayed treatment on the lifespan of severe stroke patients. The study, conducted around 406 individuals with life-threatening artery blockages, revealed that each 10-minute delay in treatment resulted in a loss of eleven months of healthy life (Even Short Delays in the ER May Reduce the Lifespan of Stroke Survivors, n.d.). Thus, rapid analysis is vital to stroke recovery.',
                   style: GoogleFonts.jost(fontSize: 20, color: kWhite),
                   textAlign: TextAlign.center,
                   softWrap: true,
@@ -1048,7 +1031,7 @@ class _AnalyzePageState extends State<AnalyzePage> {
               children: [
                 TextSpan(text: 'Model trained on '),
                 TextSpan(
-                  text: 'RSNA Intracranial Hemorrhage Detection',
+                  text: 'RSNA Intracranial Hemorrhage Analysis',
                   style: TextStyle(
                     color: kMaroonDark,
                     fontWeight: FontWeight.w600,
@@ -1096,7 +1079,7 @@ class _AnalyzePageState extends State<AnalyzePage> {
               Icon(Icons.document_scanner_outlined, color: kMaroon, size: 48),
               SizedBox(height: 12),
               Text(
-                'Detection results will appear here after analysis',
+                'Analysis results will appear here after processing',
                 style: TextStyle(
                   color: Colors.black87,
                   fontSize: 16,
