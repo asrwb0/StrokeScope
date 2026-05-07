@@ -216,4 +216,3 @@ heatmaps/
 # environment variables
 **/.env
 .env
-.env.**.pth
