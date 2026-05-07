@@ -1,24 +1,29 @@
-import os
+# type: ignore
+from pathlib import Path
 
-backend_folder = os.getcwd()
-images_folder = os.path.join(backend_folder + "/images/")
+MODEL_NAME   = "efficientnet_b0"
+NUM_CLASSES  = 1
+IMAGE_SIZE   = 224
+MODEL_WEIGHTS_PATH = Path(__file__).parent / "best_model.pth"
+NORM_MEAN = (0.485, 0.456, 0.406)
+NORM_STD  = (0.229, 0.224, 0.225)
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp"}
+MAX_FILE_SIZE_MB   = 10
+CONFIDENCE_THRESHOLD = 0.5
 
-IMAGES_PER_BATCH = 8
-IMAGE_SIZE = 224
-NUM_CLASSES = 6
-LABEL_COLS = ["any", "epidural", "intraparenchymal", "intraventricular", "subarachnoid", "subdural"]
-PREDICTION_THRESHOLD = 0.5
-MODEL_WEIGHTS_PATH = os.path.join(backend_folder, "weights", "best_model.keras")
+CONFIDENCE_TIERS = [
+    (0.80, "High"),
+    (0.60, "Moderate"),
+    (0.00, "Low"),
+]
+CLASS_NAMES = ["Normal", "Stroke"]
 
-HYPERPARAMS = {
-    "epochs": 10,
-    "learning_rate": 1e-4,
-    "dropout_rate": 0.5,
-    "num_classes": 6,
-    "shuffle_buffer": 1000
-}
+API_HOST    = "0.0.0.0"
+API_PORT    = 8000
+CORS_ORIGINS = ["*"]
 
-rsna_folder = "C:/Users/aseetharaman/Documents/rsna-intracranial-hemorrhage-detection/"
-csv_labels_path = rsna_folder + "stage_1_train.csv"
-training_images_path = rsna_folder + "stage_1_train_images/"
-test_images_path = rsna_folder + "stage_1_test_images/"
+DISCLAIMER = (
+    "This result is not a medical diagnosis. "
+    "StrokeScope is an educational and decision-support tool only. "
+    "Always consult a licensed medical professional for any clinical decisions."
+)

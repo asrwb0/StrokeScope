@@ -37,6 +37,6 @@ Safety Note:
 DATA:
 {data}
 """
-
-        response = client.responses.create(model = self.model, input = prompt, temperature = 0.0)
-        return response.output_text
+        
+        response = client.chat.completions.create(model = self.model, messages = [{"role": "user", "content": prompt}], temperature = 0.0)
+        return response.choices[0].message.content

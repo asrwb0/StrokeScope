@@ -1,58 +1,41 @@
 # type: ignore
-from termios import PARODD
-import tensorflow as tf
+import torch
+import torch.nn.functional as F
 import numpy as np
-import cv2
-import uuid
-import os
+import cv2, uuid, os
 
-GRADCAM_LAYER = "conv5_block3_out"
+HEATMAP_DIR = os.path.join(os.getcwd(), "heatmaps")
+GRADCAM_LAYER = "backbone.blocks.6"
 
-# get the most spatial layer of the CNN for feature extraction
-def _get_gradcam(model):
-    gradcam_layer = model.get_layer(GRADCAM_LAYER)
-    return tf.keras.Model(inputs = model.input, outputs = [gradcam_layer.output, model.output])
+def generate_heatmap(model, preprocessed_tensor, original_image, label_index=None):
+    model.eval()
+    activations, gradients = {}, {}
 
-def generate_heatmap(model, preprocessed_tensor, original_image, label_index):
-    gradcam_model = _get_gradcam(model)
-    
-    # GradientTape identifies model results
-    with tf.GradientTape() as tape:
-        tape.watch(preprocessed_tensor)
-        conv_outputs, predictions = gradcam_model(preprocessed_tensor)
-        
-        # if no index label exists, just use the largest probability prediction
-        if label_index is None:
-            label_index = int(tf.argmax(predictions[0]))
-        
-        # the full column of predictions is the score
-        score = predictions[:, label_index]
+    target = dict(model.named_modules())[GRADCAM_LAYER]
+    target.register_forward_hook(lambda m, i, o: activations.update({'out': o}))
+    target.register_full_backward_hook(lambda m, gi, go: gradients.update({'out': go[0]}))
 
-    gradients = tape.gradient(score, conv_outputs)
+    output = model(preprocessed_tensor)
+    probs = torch.sigmoid(output)
+    if label_index is None:
+        label_index = int(probs[0].argmax())
 
-    # pool all the gradients together
-    pooled_gradients = tf.reduce_mean(gradients, axis = (0, 1, 2))
+    model.zero_grad()
+    probs[0, label_index].backward()
 
-    # build the heatmap
-    conv_outputs = conv_outputs[0]
-    heatmap = conv_outputs @ pooled_gradients[..., tf.newaxis]
-    heatmap = tf.squeeze(heatmap)
+    grads = gradients['out'].mean(dim = (2, 3), keepdim = True)
+    cam = (activations['out'] * grads).sum(dim = 1).squeeze()
+    cam = F.relu(cam).cpu().numpy()
+    cam = (cam - cam.min()) / (cam.max() - cam.min() + 1e-8)
 
-    # cleaning the values
-    heatmap = tf.nn.relu(heatmap)
-    heatmap = heatmap.numpy()
-    heatmap = (heatmap - heatmap.min()) / (heatmap.max() - heatmap.min() + 1e-8)
-
-    # convert the heatmap to a colored image
-    heatmap = cv2.resize(heatmap, (224, 224), interpolation = cv2.INTER_LINEAR)
+    heatmap = cv2.resize(cam, (224, 224))
     heatmap_colored = cv2.applyColorMap(np.uint8(255 * heatmap), cv2.COLORMAP_JET)
 
-    # bleng the created colored image with the original
-    original_image = cv2.resize(original_image, (224, 224))
-    blended = cv2.addWeighted(heatmap_colored, 0.4, original_image, 0.6, 0)
+    original_bgr = cv2.resize(cv2.cvtColor(original_image, cv2.COLOR_RGB2BGR), (224, 224))
+    blended = cv2.addWeighted(heatmap_colored, 0.4, original_bgr, 0.6, 0)
+    cv2.putText(blended, f"Class: {label_index}", (10, 25),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
 
-    # save the predicted class label with the image and saves it to disks
-    cv2.putText(blended, f"Class: {label_index}", (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
     os.makedirs(HEATMAP_DIR, exist_ok = True)
     path = os.path.join(HEATMAP_DIR, f"{uuid.uuid4()}.jpg")
     cv2.imwrite(path, blended)

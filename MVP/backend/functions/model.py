@@ -1,43 +1,49 @@
 # type: ignore
-import tensorflow as tf
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Dense, Dropout, GlobalAveragePooling2D
-from tensorflow.keras.applications import ResNet50
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.losses import BinaryCrossentropy
-from tensorflow.keras.metrics import AUC
-from config import NUM_CLASSES, MODEL_WEIGHTS_PATH, HYPERPARAMS
-import os
+from __future__ import annotations
 
-def build_model(dropout_rate):
-    # use ResNet50 as the base model
-    base = ResNet50(weights = 'imagenet', include_top = False, input_shape = (224, 224, 3))
-    base.trainable = False
-    x = GlobalAveragePooling2D()(base.output)
-    x = Dense(256, activation = "relu")(x)
-    x = Dropout(dropout_rate)(x)
-    output = Dense(NUM_CLASSES, activation = "sigmoid")(x)
-    # define a model object for each function call
-    model = Model(inputs = base.input, outputs = output)
-    _compile(model)
-    return model
+import sys
+from pathlib import Path
 
-def _compile(model, learning_rate = HYPERPARAMS['learning_rate']):
-    # define a model optimizer
-    optimizer = Adam(learning_rate = learning_rate)
-    loss = BinaryCrossentropy()
-    metrics = ["accuracy", AUC(name = "auc", multi_label = True)]
-    model.compile(optimizer = optimizer, loss = loss, metrics = metrics)
+_backend_dir = str(Path(__file__).resolve().parent.parent)
+if _backend_dir not in sys.path:
+    sys.path.insert(0, _backend_dir)
 
-def unfreeze_base(model, learning_rate = 1e-5):
-    # unfreeze the model so that fine-tuning later is possible
-    model.layers[0].trainable = True
-    _compile(model, learning_rate = learning_rate)
+import torch
+import torch.nn as nn
+import timm
+from config import MODEL_NAME, NUM_CLASSES, MODEL_WEIGHTS_PATH
+class StrokeModel(nn.Module):
+    def __init__(self, model_name: str = MODEL_NAME, pretrained: bool = False):
+        super().__init__()
+        self.backbone = timm.create_model(
+            model_name,
+            pretrained = pretrained,
+            num_classes = 0,
+            global_pool = "avg",
+        )
+        n_feat = self.backbone.num_features
+        self.head = nn.Sequential(
+            nn.Dropout(0.3),
+            nn.Linear(n_feat, 256),
+            nn.SiLU(),
+            nn.Dropout(0.2),
+            nn.Linear(256, NUM_CLASSES),
+        )
 
-def load_model(weights_path = MODEL_WEIGHTS_PATH):
-    if not os.path.exists(weights_path):
-        raise FileNotFoundError(f"Model weights not found at '{weights_path}'.")
-    # build a new model and load the weights into it
-    model = build_model(dropout_rate = HYPERPARAMS['dropout_rate'])
-    model.load_weights(weights_path)
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.head(self.backbone(x)).squeeze(1)
+
+
+def load_model(weights_path: Path = MODEL_WEIGHTS_PATH,
+               device: torch.device | None = None) -> StrokeModel:
+    if device is None:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    model = StrokeModel(pretrained = False)
+    state = torch.load(weights_path, map_location = device)
+    state = {k.replace("_orig_mod.", "").replace("module.", ""): v
+             for k, v in state.items()}
+    model.load_state_dict(state, strict = True)
+    model.to(device)
+    model.eval()
     return model

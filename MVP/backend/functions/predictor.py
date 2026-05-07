@@ -1,45 +1,67 @@
-from model import load_model
-from dataclasses import dataclass
-from dicom import load_dicom, preprocess
-from config import LABEL_COLS, PREDICTION_THRESHOLD
+# type: ignore
+from __future__ import annotations
 
-# this stores the result of get_model into _model
-_model = None
+import io
+import torch
+import numpy as np
+from PIL import Image
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
 
-def get_model():
-    global _model
-    if _model is None:
-        _model = load_model()
-    return _model
+from config import (
+    IMAGE_SIZE, NORM_MEAN, NORM_STD,
+    CONFIDENCE_THRESHOLD, CONFIDENCE_TIERS,
+    CLASS_NAMES, DISCLAIMER,
+)
+from .model import StrokeModel
 
-# create a dataclass to store all relevant information about a model
-@dataclass
-class PredictionResult:
-    probabilities: dict
-    predictions: dict
-    any_hemorrhage: bool
-    low_confidence: bool
+_val_transform = A.Compose([
+    A.Resize(IMAGE_SIZE, IMAGE_SIZE),
+    A.Normalize(mean = NORM_MEAN, std = NORM_STD),
+    ToTensorV2(),
+])
 
-def predict(image_path):
-    loaded_image = load_dicom(image_path)
-    processed_image = preprocess(loaded_image)
-    raw = get_model().predict(processed_image)[0]
 
-    probabilities = {}
-    for label, prob in zip(LABEL_COLS, raw):
-        probabilities[label] = float(prob)
+def _confidence_tier(score: float) -> str:
+    for threshold, label in CONFIDENCE_TIERS:
+        if score >= threshold:
+            return label
+    return "Low"
 
-    predictions = {}
-    for label, prob in probabilities.items():
-        predictions[label] = prob >= PREDICTION_THRESHOLD
 
-    any_hemorrhage = predictions["any"]
+def preprocess_image(image_bytes: bytes) -> torch.Tensor:
+    pil_img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    img_np  = np.array(pil_img, dtype = np.uint8)
+    transformed = _val_transform(image = img_np)
+    tensor = transformed["image"]
+    return tensor.unsqueeze(0)
 
-    subtype_probs = []
-    for l in LABEL_COLS:
-        if l != "any":
-            subtype_probs.append(probabilities[l])
+def predict(model: StrokeModel,
+            image_bytes: bytes,
+            device: torch.device | None = None) -> dict:
+    if device is None:
+        device = next(model.parameters()).device
 
-    low_confidence = max(subtype_probs) < (PREDICTION_THRESHOLD + 0.1)
+    tensor = preprocess_image(image_bytes).to(device)
 
-    return PredictionResult(probabilities = probabilities, predictions = predictions, any_hemorrhage = any_hemorrhage, low_confidence = low_confidence)
+    with torch.no_grad():
+        logit       = model(tensor)
+        stroke_prob = torch.sigmoid(logit).item()
+
+    normal_prob     = 1.0 - stroke_prob
+    is_stroke       = stroke_prob >= CONFIDENCE_THRESHOLD
+    predicted_class = CLASS_NAMES[int(is_stroke)]
+    confidence      = stroke_prob if is_stroke else normal_prob
+
+    return {
+        "predicted_class":    predicted_class,
+        "confidence":         round(confidence, 4),
+        "confidence_tier":    _confidence_tier(confidence),
+        "stroke_probability": round(stroke_prob, 4),
+        "low_confidence":     confidence < 0.60,
+        "all_class_scores": {
+            "Normal": round(normal_prob, 4),
+            "Stroke": round(stroke_prob, 4),
+        },
+        "disclaimer": DISCLAIMER,
+    }
