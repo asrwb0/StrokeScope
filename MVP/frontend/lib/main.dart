@@ -1107,10 +1107,8 @@ class AboutUsPage extends StatelessWidget {
             const SizedBox(height: 20),
             Text('ABOUT US',
                 style: GoogleFonts.bebasNeue(
-                    fontSize: 60,
-                    color: kMaroonDark,
-                    decoration: TextDecoration.underline,
-                    decorationColor: kMaroonDark)),
+                  fontSize: 60,
+                  color: kMaroonDark)),
             const SizedBox(height: 8),
             Text('Why did we build StrokeScope?',
                 style: GoogleFonts.jost(fontSize: 18, color: Colors.black54)),
@@ -1181,11 +1179,9 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(title,
         style: GoogleFonts.bebasNeue(
-            fontSize: 42,
-            color: kMaroonDark,
-            decoration: TextDecoration.underline,
-            decorationColor: kMaroonDark,
-            letterSpacing: 1.5));
+          fontSize: 42,
+          color: kMaroonDark,
+          letterSpacing: 1.5));
   }
 }
 
@@ -1245,11 +1241,9 @@ class InfoPage extends StatelessWidget {
             children: [
               Container(height: 2, color: kMaroon),
               Text('LEARN MORE ABOUT STROKES',
-                  style: GoogleFonts.bebasNeue(
-                      fontSize: 60,
-                      color: kMaroonDark,
-                      decoration: TextDecoration.underline,
-                      decorationColor: kMaroonDark)),
+                style: GoogleFonts.bebasNeue(
+                  fontSize: 60,
+                  color: kMaroonDark)),
               const SizedBox(height: 24),
               AppCard(
                 width: 1200,
