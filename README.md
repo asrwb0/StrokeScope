@@ -327,15 +327,14 @@ dependencies:
 
 StrokeScope was developed by high school students as part of a rigorous independent computer science curriculum. In the interest of transparency, we are disclosing how AI assistance was used during development.
 
-**Tool used:** Claude Sonnet 4.6, GitHub Copilot.
+**Tools used:** Claude Sonnet 4.6, GitHub Copilot.
 
-**How it was used:**
+**How it was used:** At the outset of the project, Claude was used to generate a comprehensive task breakdown and skeleton code structure, helping establish a clear development roadmap and project architecture before any feature implementation began. This gave the team a solid foundation to build from rather than starting from a blank slate.
 
-At the outset of the project, Claude was used to generate a comprehensive task breakdown and skeleton code structure — helping establish a clear development roadmap and project architecture before any feature implementation began. This gave the team a solid foundation to build from rather than starting from a blank slate.
-
-Throughout development, Claude was used to assist with specific implementation challenges that fell outside the team's existing knowledge — including PyTorch model integration, FastAPI backend patterns, Flutter layout constraints, and UI styling. In these cases, generated code was reviewed, tested, debugged, and deliberately modified by the student developers to fit the project's specific requirements.
+Throughout development, Claude played a significant role across the stack, assisting with backend implementation, PyTorch model integration, FastAPI patterns, frontend layout, and debugging. Claude was used heavily at times, particularly when implementation challenges fell outside the team's existing knowledge. In all cases, generated code was reviewed, tested, debugged, and deliberately modified by the student developers to fit the project's specific requirements.
 
 GitHub Copilot was used for quick fixes in syntax or inaccurate implementation of code. Copilot was occasionally used to generate code, but its primary function was to revise team-written code to ensure accuracy.
+
 
 ---
 
