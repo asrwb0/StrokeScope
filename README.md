@@ -1,56 +1,44 @@
 # StrokeScope
 
-StrokeScope is a cross-platform Progressive Web App (PWA) that analyzes brain CT scans using a deep learning model to detect and classify intracranial hemorrhages. It provides plain-language, AI-generated explanations of results alongside a mandatory medical disclaimer, designed to serve as an educational and clinical decision-support tool.
+StrokeScope is a full-stack Progressive Web App that analyzes brain CT scans using a fine-tuned deep learning model to detect stroke. It returns a binary classification (Normal vs. Stroke), confidence scoring, and a plain-language AI-generated explanation — all designed as an educational and clinical decision-support tool.
 
-StrokeScope is being built for the **2026 Apps For Good Challenge** as part of the Computer Science curriculum at the **Massachusetts Academy of Math & Science at WPI**, using the VSCode IDE and its packages for Flutter and Python development.
+Built for the **2026 Apps For Good Challenge** as part of the Computer Science curriculum at the **Massachusetts Academy of Math & Science at WPI**.
 
-**Medical Disclaimer:** StrokeScope is not a substitute for professional medical diagnosis. All results are for informational and educational purposes only. Always consult a licensed medical professional.
+> **Medical Disclaimer:** StrokeScope is not a substitute for professional medical diagnosis. All results are for informational and educational purposes only. Always consult a licensed medical professional.
 
 ---
 
 ## Table of Contents
 
-```mermaid
-graph TD
-    subgraph GS[Getting Started]
-        prereq["Prerequisites"]
-        backend["Backend Setup"]
-        frontend["Frontend Setup"]
-    end
-
-    subgraph ML[Machine Learning]
-        dataset["Dataset"]
-        arch["Model Architecture"]
-        preprocess["Preprocessing Pipeline"]
-        train["Training Configuration"]
-        gradcam["Grad-CAM (Roadmap)"]
-    end
-
-    overview["Overview"]
-    features["Features"]
-    architecture["Architecture"]
-
-    overview --> features --> architecture --> GS --> ML
-```
+- [Overview](#overview)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Getting Started](#getting-started)
+- [Machine Learning Model](#machine-learning-model)
+- [API Reference](#api-reference)
+- [Frontend](#frontend)
+- [Roadmap](#roadmap)
+- [AI Use Disclosure](#ai-use-disclosure)
 
 ---
 
 ## Overview
 
-Hemorrhagic strokes, which are caused by a ruptured blood vessel in the brain, account for roughly 20% of all strokes but carry disproportionately high mortality and disability rates. Rapid, accurate classification of hemorrhage type from CT imaging is critical, yet access to radiological expertise is uneven across care settings.
+Hemorrhagic and ischemic strokes together are among the leading causes of death and disability worldwide. Rapid identification of stroke from CT imaging is critical, yet radiological expertise is unevenly distributed across care settings.
 
-StrokeScope addresses this by running a fine-tuned **ResNet50** convolutional neural network directly in the browser via **TensorFlow.js**, classifying an uploaded CT scan into one of **six RSNA hemorrhage categories** in seconds, with no server round-trip required for inference. An **LLM explanation layer** (using the ChatGPT API) then translates the raw model output into understandable results for non-specialist users.
+StrokeScope runs a fine-tuned **EfficientNet-B0** convolutional neural network on a **FastAPI** backend, classifying an uploaded CT scan as **Normal** or **Stroke** in seconds. A **GPT-4.1-mini explanation layer** translates raw model output into a structured, plain-language summary for non-specialist users.
 
 ---
 
 ## Features
 
-- **CT scan upload** — accepts DICOM, JPEG, and PNG formats
-- **On-device ML inference** via TensorFlow.js so that no image data leaves the browser
-- **Six-class hemorrhage classification** using the RSNA dataset label schema
+- **CT scan upload** — accepts JPEG, PNG, and BMP formats
+- **Binary stroke classification** — Normal vs. Stroke using EfficientNet-B0
 - **Confidence scoring** with tiered display (Low / Moderate / High)
-- **AI-generated plain-language summary** via the ChatGPT API
-- **Mandatory medical disclaimer modal** before any scan analysis
+- **AI-generated plain-language explanation** via GPT-4.1-mini, structured as Finding / Confidence / Details / Safety Note
+- **FastAPI backend** with `/api/analyze`, `/api/feedback`, and `/api/health` endpoints
+- **Flutter web frontend** with upload zone, results panel, and feedback form
+- **Mandatory medical disclaimer** on all results
 
 ---
 
@@ -60,98 +48,61 @@ StrokeScope addresses this by running a fine-tuned **ResNet50** convolutional ne
 flowchart TD
     subgraph User_Device["User Device"]
         A["Flutter PWA (Dart/Web)"]
-        B["TensorFlow.js Inference Engine"]
-        A --> B
     end
 
-    B --> C["Firebase Firestore (feedback, logs)"]
-    B --> D["Firebase Storage (TF.js Model)"]
-    C --> E["ChatGPT API (LLM layer)"]
+    subgraph Backend["FastAPI Backend (Python)"]
+        B["EfficientNet-B0\n(PyTorch + timm)"]
+        C["GPTWrapper\n(GPT-4.1-mini)"]
+        B --> C
+    end
+
+    A -- "POST /api/analyze\n(JPEG/PNG)" --> B
+    C -- "AnalyzeResponse JSON" --> A
 ```
 
-The ML model is trained offline in Python (TensorFlow/Keras), converted to TF.js format, and hosted on Firebase Storage. All inference runs client-side. The ChatGPT API is called after inference to generate the plain-language result summary.
+The Flutter frontend uploads a CT scan to the FastAPI backend. The backend runs inference with the PyTorch model, passes the result to the GPT wrapper for plain-language explanation, and returns a structured JSON response.
 
 ---
 
 ## Tech Stack
 
-<div align="center">
-
 | Layer | Technology |
 |---|---|
 | Frontend | Flutter (Dart), Material 3, `go_router` |
-| ML Inference (client) | TensorFlow.js |
-| ML Training (offline) | Python, TensorFlow/Keras, ResNet50 |
-| LLM Explanation | OpenAI ChatGPT API (`gpt-4o`) |
-| Backend / Database | Firebase Firestore, Firebase Storage, Firebase Hosting |
-| DICOM Processing | `pydicom`, NumPy, OpenCV |
-| Data Source | RSNA Intracranial Hemorrhage Detection from Kaggle |
-
-</div>
+| Backend | Python, FastAPI, Uvicorn |
+| ML Model | PyTorch, timm, EfficientNet-B0 |
+| Preprocessing | Albumentations, Pillow, OpenCV |
+| LLM Explanation | OpenAI GPT-4.1-mini |
+| Data Source | Brain Stroke CT Dataset (`ozguraslank/brain-stroke-ct-dataset`, Kaggle) |
 
 ---
 
 ## Repository Structure
 
-```mermaid
-%% StrokeScope File Tree - GitHub-safe
-graph TB
-    StrokeScope["📂 StrokeScope"]
-
-    %% MVP folder
-    MVP["📂 MVP"]
-    StrokeScope --> MVP
-
-    %% Backend
-    backend["📂 backend"]
-    MVP --> backend
-    backend --> mainpy["main.py - API stubs"]
-    backend --> configpy["config.py - Hyperparameters & paths"]
-
-    api["📂 api"]
-    backend --> api
-    api --> routespy["routes.py - API route definitions (WIP)"]
-
-    data["📂 data"]
-    backend --> data
-    data --> datap["data.py - RSNA CSV parsing"]
-    data --> batchpy["batch.py - Batch generator"]
-
-    functions["📂 functions"]
-    backend --> functions
-    functions --> modelpy["model.py - ResNet50 definition"]
-    functions --> predictorpy["predictor.py - Inference wrapper"]
-    functions --> dicompy["dicom.py - DICOM preprocessing"]
-    functions --> windowingpy["windowing.py - CT windowing"]
-    functions --> gradcampy["gradcam.py - Grad-CAM generation"]
-
-    health["📂 health"]
-    backend --> health
-    health --> schemaspy["schemas.py - Pydantic/dataclass schemas"]
-
-    %% Frontend
-    frontend["📂 frontend"]
-    MVP --> frontend
-
-    lib["📂 lib"]
-    frontend --> lib
-    lib --> maindart["main.dart - Flutter app"]
-
-    web["📂 web"]
-    frontend --> web
-    web --> indexhtml["index.html - PWA shell"]
-    web --> manifestjson["manifest.json - PWA manifest"]
-
-    frontend --> pubspec["pubspec.yaml - Dependencies"]
-    frontend --> analysis["analysis_options.yaml"]
-
-    %% Tasks
-    MVP --> tasks["TASKS.txt - Sprint breakdown"]
-
-    %% Root files
-    StrokeScope --> gitignore[".gitignore"]
-    StrokeScope --> license["LICENSE"]
-    StrokeScope --> readme["README.md"]
+```
+StrokeScope/
+├── MVP/
+│   ├── backend/
+│   │   ├── main.py                  # FastAPI app, lifespan model loading
+│   │   ├── config.py                # Hyperparameters, paths, class names
+│   │   ├── requirements.txt
+│   │   ├── api/
+│   │   │   └── routes.py            # /analyze, /feedback, /health endpoints
+│   │   ├── functions/
+│   │   │   ├── model.py             # EfficientNet-B0 + binary head definition
+│   │   │   ├── predictor.py         # Preprocessing + inference wrapper
+│   │   │   ├── wrapper.py           # GPT-4.1-mini explanation layer
+│   │   │   └── gradcam.py           # Grad-CAM (roadmap)
+│   │   ├── health/
+│   │   │   └── schemas.py           # Pydantic response schemas
+│   │   └── data/
+│   │       └── data.py              # Dataset utilities for local retraining
+│   └── frontend/
+│       └── lib/
+│           └── main.dart            # Full Flutter app (3 pages)
+├── .gitignore
+├── LICENSE
+└── README.md
 ```
 
 ---
@@ -160,61 +111,46 @@ graph TB
 
 ### Prerequisites
 
-<div align="center">
-
-| Tool / Resource | Version | Link |
-|:-----------------:|:------:|:------:|
-| Flutter SDK        | ≥ 3.11 | [Docs](https://docs.flutter.dev/get-started/install) |
-| Python             | ≥ 3.9  | [Python.org](https://www.python.org/) |
-| Firebase CLI       | —      | [Docs](https://firebase.google.com/docs/cli) |
-| OpenAI API key  | —      | [Sign up](https://platform.openai.com/home/) |
-| RSNA Dataset       | —      | [Kaggle](https://www.kaggle.com/c/rsna-intracranial-hemorrhage-detection) |
-</div>
+| Tool | Version |
+|---|---|
+| Flutter SDK | ≥ 3.11 |
+| Python | ≥ 3.9 |
+| OpenAI API key | GPT-4.1-mini access |
 
 ### Backend Setup
 
 ```bash
 git clone https://github.com/asrwb0/StrokeScope.git
-cd StrokeScope
-git checkout backend
+cd StrokeScope/MVP/backend
 
 python -m venv venv
-source venv/bin/activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-pip install tensorflow keras pydicom numpy opencv-python pandas scikit-learn
+pip install fastapi uvicorn[standard] python-multipart \
+            torch timm albumentations Pillow opencv-python-headless \
+            pydantic openai python-dotenv
+```
 
-# Configure paths
-# Edit MVP/backend/config.py and update:
-#   rsna_folder          → path to your downloaded RSNA dataset
-#   csv_labels_path      → path to stage_1_train.csv
-#   training_images_path → path to stage_1_train_images/
+Place your trained weights file at `MVP/backend/best_model.pth`.
 
-cd MVP/backend
-python data/data.py
+Create `MVP/backend/.env`:
+```
+OPENAI_API_KEY=sk-...
+```
 
-python functions/model.py
+Start the server:
+```bash
 python main.py
+# API running at http://localhost:8000
+# Swagger UI at http://localhost:8000/docs
 ```
 
 ### Frontend Setup
 
 ```bash
-git checkout frontend
 cd MVP/frontend
-
 flutter pub get
-
-# Create a .env file with API keys
-# Required fields:
-#   OPENAI_API_KEY=sk-ant-...
-#   FIREBASE_API_KEY=...
-#   FIREBASE_PROJECT_ID=...
-
 flutter run -d chrome
-flutter build web --release
-
-# This is a Firebase step which has not yet been configured
-firebase deploy --only hosting
 ```
 
 ---
@@ -223,133 +159,131 @@ firebase deploy --only hosting
 
 ### Dataset
 
-StrokeScope uses the **RSNA Intracranial Hemorrhage Detection** dataset from Kaggle, which contains labeled brain CT scan slices in DICOM format. The dataset includes six binary labels per scan:
+StrokeScope uses the **Brain Stroke CT Dataset** by ozguraslank, available on Kaggle. The dataset contains CT scan slices organized into three folders:
 
-<div align="center">
+| Folder | Label | Binary Label |
+|---|---|---|
+| `Normal/PNG/` | Healthy scan | 0 |
+| `Bleeding/PNG/` | Haemorrhagic stroke | 1 |
+| `Ischemia/PNG/` | Ischaemic stroke | 1 |
 
-| Label | Description |
-|:---:|:---:|
-| `epidural` | Epidural hemorrhage |
-| `intraparenchymal` | Intraparenchymal hemorrhage |
-| `intraventricular` | Intraventricular hemorrhage |
-| `subarachnoid` | Subarachnoid hemorrhage |
-| `subdural` | Subdural hemorrhage |
-| `any` | Any hemorrhage present |
-
-</div>
-
-Labels are parsed from `stage_1_train.csv` using the RSNA `ImageId_type` naming convention. The dataset is split 80/20 into training and validation sets with stratified sampling on the `any` column.
+Bleeding and Ischemia are collapsed into a single **Stroke** label (1) for binary classification. The dataset is split 80/20 with stratified sampling.
 
 ### Model Architecture
 
-The model uses **ResNet50** pretrained on ImageNet as a frozen feature extractor, with a custom classification head for multi-label hemorrhage detection:
+EfficientNet-B0 pretrained on ImageNet as a feature extractor, with a custom binary classification head:
 
 ```
-ResNet50 (pretrained, frozen)
-    └── GlobalAveragePooling2D
-        └── Dense(256, activation='relu')
-            └── Dropout(0.5)
-                └── Dense(6, activation='sigmoid')   ← one output per hemorrhage type
+EfficientNet-B0 (timm, global average pooling)
+    └── Dropout(0.3)
+        └── Linear(n_features → 256)
+            └── SiLU
+                └── Dropout(0.2)
+                    └── Linear(256 → 1)   ← single logit, sigmoid → probability
 ```
 
-The sigmoid output allows independent predictions for each hemorrhage type (multi-label), since a scan can contain more than one type simultaneously.
-
-Fine-tuning support is built in via `unfreeze_base()`, which unfreezes the ResNet50 layers and recompiles at a reduced learning rate (`1e-5`) for a second training pass.
+A sigmoid score ≥ 0.5 is classified as **Stroke**. The positive-class weight (`n_normal / n_stroke`) is applied in `BCEWithLogitsLoss` during training to handle class imbalance.
 
 ### Preprocessing Pipeline
 
-Each DICOM file goes through a dedicated three-stage preprocessing pipeline before being passed to the model:
+At inference time, uploaded images go through:
 
-**1. HU Conversion (`dicom.py`)**
+1. **Decode** — JPEG/PNG bytes → PIL RGB → NumPy uint8
+2. **Resize** — to 224×224 (EfficientNet-B0 input size)
+3. **Normalize** — ImageNet mean/std via Albumentations
+4. **Tensorize** — CHW float32 tensor, batch dim added
 
-Raw pixel values are converted to Hounsfield Units (HU) using the DICOM metadata fields `RescaleSlope` and `RescaleIntercept`. HU values encode tissue density, making this conversion essential for windowing.
-
-**2. CT Windowing (`windowing.py`)**
-
-Three clinically standard CT windows are applied to isolate different tissue types:
-
-<div align="center">
-
-| Window | Purpose |
-|:---:|:---:|
-| Brain window | Parenchymal tissue differentiation |
-| Subdural window | Blood/fluid detection near the dura |
-| Bone window | Skull and bony structure visualization |
-
-</div>
-
-Each window clips and normalizes the HU array to [0, 1], and the three resulting arrays are stacked together as RGB channels, forming a single 3-channel image that simultaneously encodes multi-tissue information. This approach is common in CT deep learning pipelines and allows standard ImageNet-pretrained models to be applied to CT data.
-
-**3. Resize & Normalize**
-
-The stacked image is resized to **224×224** pixels (ResNet50 input size) using `cv2.INTER_AREA` interpolation, then passed through ResNet50's `preprocess_input` to apply ImageNet-standard normalization.
+This pipeline mirrors the validation transform used during training exactly.
 
 ### Training Configuration
 
-```python
-HYPERPARAMS = {
-    "epochs": 10,
-    "learning_rate": 1e-4,       # initial training pass
-    "dropout_rate": 0.5,
-    "num_classes": 6,
-    "shuffle_buffer": 1000
-}
-
-# Fine-tuning pass
-FINE_TUNE_LR = 1e-5
-IMAGES_PER_BATCH = 8
-IMAGE_SIZE = 224
-```
-<div align="center">
-
 | Setting | Value |
-|:---:|:---:|
-| Loss | `BinaryCrossentropy` (multi-label) |
-| Optimizer | `Adam` |
-| Metrics | `accuracy`, `AUC` (multi-label) |
-| Batch size | 8 |
+|---|---|
+| Backbone | EfficientNet-B0 (timm) |
+| Loss | `BCEWithLogitsLoss` with pos_weight |
+| Optimizer | Adam |
 | Image size | 224×224 |
-| Output classes | 6 |
+| Output | 1 logit (binary) |
+| Weights file | `best_model.pth` (state_dict) |
 
-</div>
+---
 
-### Grad-CAM (Roadmap)
+## API Reference
 
-A Grad-CAM implementation targeting `conv5_block3_out` (the final ResNet50 convolutional block) is partially implemented in `functions/gradcam.py`. It uses `tf.GradientTape` to compute class-activation heatmaps that highlight the regions of the scan most influential to the prediction. This feature is deferred from the MVP but is the top priority for a post-MVP release.
+### `POST /api/analyze`
+
+Accepts a CT scan image and returns a binary classification with confidence scores and AI explanation.
+
+**Request:** `multipart/form-data`, field `file` (JPEG / PNG / BMP, max 10 MB)
+
+**Response:**
+```json
+{
+  "predicted_class": "Stroke",
+  "confidence": 0.91,
+  "confidence_tier": "High",
+  "stroke_probability": 0.91,
+  "low_confidence": false,
+  "all_class_scores": {
+    "Normal": 0.09,
+    "Stroke": 0.91
+  },
+  "llm_explanation": "Finding:\nThe model detected imaging features consistent with stroke...\n\nConfidence:\nHigh confidence (91%)...\n\nDetails:\nStroke probability 91%, Normal probability 9%...\n\nSafety Note:\nThis is not a medical diagnosis...",
+  "disclaimer": "This result is not a medical diagnosis. StrokeScope is an educational and decision-support tool only. Always consult a licensed medical professional for any clinical decisions."
+}
+```
+
+**Confidence tiers:**
+
+| Tier | Range |
+|---|---|
+| Low | < 0.60 |
+| Moderate | 0.60 – 0.80 |
+| High | > 0.80 |
+
+### `POST /api/feedback`
+
+Saves user feedback.
+
+**Request body:**
+```json
+{
+  "ease_of_use": 4,
+  "comments": "Very intuitive interface.",
+  "timestamp": "2026-05-07T14:00:00Z"
+}
+```
+
+### `GET /api/health`
+
+Returns server and model status.
+
+```json
+{ "status": "ok", "model_loaded": true, "device": "cpu" }
+```
 
 ---
 
 ## Frontend
 
-### Pages & Routing
-
-The Flutter app uses `go_router` for declarative routing across three pages:
-
-<div align="center">
+### Pages
 
 | Route | Page | Description |
-|:---:|:---:|:---:|
-| `/` | `HomePage` | Mission statement, how-it-works flow, stroke education cards, CTA |
-| `/analyze` | `AnalyzePage` | CT scan upload, file picker, results display (WIP) |
-| `/feedback` | `FeedbackPage` | Structured feedback form, star rating, Firestore submission |
+|---|---|---|
+| `/` | `HomePage` | Mission statement, how-it-works flow, stroke education cards |
+| `/analyze` | `AnalyzePage` | CT scan upload, binary results panel, AI explanation card |
+| `/feedback` | `FeedbackPage` | Structured feedback form with star rating and confirmation |
 
-</div>
+### Results Panel
 
-### Key Components
+After analysis, the right panel renders:
 
-**`NavBar`** — Fixed top navigation bar (`#0A1F44` deep navy). Renders active route highlighting and links to all three pages. Logo is currently a text placeholder.
-
-**`AnalyzePage` / `_buildUploadBox()`** — Dotted-border upload zone accepting `.dcm`, `.dicom`, `.jpg`, `.jpeg`, and `.png`. Displays an empty state with instructions and a "Browse Files" button; once a file is selected, shows the filename and an "Analyze File" button. Files exceeding 10MB will be rejected with an error message.
-
-**`FeedbackPage` / `MyCustomForm`** — Fully validated feedback form including:
-- Role dropdown (Medical Professional, Researcher, Patient, Student, Other)
-- Interactive 5-star `StarRatingWidget`
-- Area-of-feedback dropdown (Analysis, Home Page, Contact Us, Overall Experience)
-- Consent/permission dropdown
-- Two open-text comment fields
-- Submit button (wired to Firestore via `feedback_service.dart`, in progress)
-
-**`StarRatingWidget`** — Reusable stateful widget supporting customizable star count, initial rating, color, and an `onRatingChanged` callback.
+- **Verdict header** — "⚠ Stroke Detected" (red) or "✓ No Stroke Detected" (green)
+- **Confidence tier and percentage**
+- **Score bars** — Normal and Stroke probabilities as linear progress bars
+- **Low confidence warning** (amber) — shown when confidence < 60%
+- **AI Explanation card** — GPT output parsed into four labelled sections: FINDING, CONFIDENCE, DETAILS, SAFETY NOTE
+- **Medical disclaimer**
 
 ### Flutter Dependencies
 
@@ -358,123 +292,55 @@ dependencies:
   flutter:
     sdk: flutter
   go_router: ^17.1.0
-  google_fonts: (latest)
-  file_picker: (latest)
-  dotted_border: (latest)
-  dio: (latest)
+  google_fonts: latest
+  file_picker: latest
+  dotted_border: latest
+  dio: latest
   cupertino_icons: ^1.0.8
-  # Pending Firebase integration:
-  # firebase_core
-  # cloud_firestore
-  # firebase_storage
-```
-
----
-
-## API Reference
-
-The backend (`main.py`) defines the following endpoints. Full implementation is in progress.
-
-### `POST /api/analyze`
-
-Accepts a CT scan image, runs inference, and returns a structured result.
-
-**Request:** `multipart/form-data` with field `file` (DICOM / JPEG / PNG, max 10MB)
-
-**Response:**
-```json
-{
-  "predicted_class": "subdural",
-  "confidence": 0.87,
-  "confidence_tier": "High",
-  "all_class_scores": {
-    "epidural": 0.03,
-    "intraparenchymal": 0.11,
-    "intraventricular": 0.05,
-    "subarachnoid": 0.09,
-    "subdural": 0.87,
-    "any": 0.94
-  },
-  "low_confidence": false,
-  "llm_explanation": "The model detected signs consistent with a subdural hemorrhage...",
-  "disclaimer": "This result is not a medical diagnosis. Consult a licensed healthcare provider."
-}
-```
-
-**Confidence tiers:**
-
-<div align="center">
-
-| Tier | Range |
-|:---:|:---:|
-| Low | < 0.60 |
-| Moderate | 0.60 – 0.80 |
-| High | > 0.80 |
-
-</div>
-
-### `GET /api/heatmap/<filename>`
-
-Serves a generated Grad-CAM heatmap image from the heatmaps folder. Returns 404 if the file does not exist. *(Roadmap feature)*
-
-### `POST /api/feedback`
-
-Saves user feedback to Firestore.
-
-**Request body:**
-```json
-{
-  "ease_of_use": 4,
-  "comments": "Very intuitive interface.",
-  "timestamp": "2026-04-07T14:00:00Z"
-}
-```
-
-### `GET /api/health`
-
-Returns server health status. Used for uptime monitoring and deployment checks.
-
-```json
-{ "status": "ok" }
 ```
 
 ---
 
 ## Roadmap
 
-<div align="center">
-
 | Feature | Status |
-|:---:|:---:|
+|---|---|
 | CT scan upload & file validation | Complete |
 | Flutter routing (3 pages) | Complete |
 | Home page education content | Complete |
-| Feedback form with star rating | Complete |
-| ResNet50 model architecture | Complete |
-| DICOM preprocessing pipeline | Complete |
-| CT windowing (brain/subdural/bone) | Complete |
-| Batch data generator | Complete |
-| Model training & fine-tuning | In Progress |
-| TF.js model conversion | In Progress |
-| Firebase Storage model hosting | In Progress |
-| TF.js client-side inference | In Progress |
-| LLM explanation layer (ChatGPT API) | In Progress |
-| Results UI (confidence, AI summary) | In Progress |
-| Firebase Firestore integration | In Progress |
-| Medical disclaimer modal | In Progress |
+| Feedback form with star rating + snackbar | Complete |
+| EfficientNet-B0 binary model | Complete |
+| FastAPI backend with PyTorch inference | Complete |
+| GPT-4.1-mini explanation layer | Complete |
+| Binary results UI (confidence, AI summary) | Complete |
+| Medical disclaimer on all results | Complete |
+| Firebase Firestore feedback integration | In Progress |
 | Firebase Hosting deployment | Planned |
-| Merge `frontend` + `backend` → `main` | Planned |
 | Grad-CAM heatmap overlay | Post-MVP |
 | Patient scan history dashboard | Post-MVP |
-| U-Net lesion segmentation | Post-MVP |
 | Downloadable PDF report | Post-MVP |
 | HIPAA-compliant data handling | Post-MVP |
-| Advanced stroke subtype classification | Post-MVP |
 
-</div>
+---
+
+## AI Use Disclosure
+
+StrokeScope was developed by high school students as part of a rigorous independent computer science curriculum. In the interest of transparency, we are disclosing how AI assistance was used during development.
+
+**Tool used:** Claude Sonnet 4.6, GitHub Copilot.
+
+**How it was used:**
+
+At the outset of the project, Claude was used to generate a comprehensive task breakdown and skeleton code structure — helping establish a clear development roadmap and project architecture before any feature implementation began. This gave the team a solid foundation to build from rather than starting from a blank slate.
+
+Throughout development, Claude was used to assist with specific implementation challenges that fell outside the team's existing knowledge — including PyTorch model integration, FastAPI backend patterns, Flutter layout constraints, and UI styling. In these cases, generated code was reviewed, tested, debugged, and deliberately modified by the student developers to fit the project's specific requirements.
+
+GitHub Copilot was used for quick fixes in syntax or inaccurate implementation of code. Copilot was occasionally used to generate code, but its primary function was to revise team-written code to ensure accuracy.
 
 ---
 
 ## License
 
 This project is licensed under the terms found in [LICENSE](./LICENSE).
+
+*Built at the Massachusetts Academy of Math & Science at WPI.*
