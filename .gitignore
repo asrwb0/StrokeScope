@@ -14,8 +14,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-MVP/backend/venv/lib/
-MVP/backend/venv/lib64/
+backend/venv/lib/
+backend/venv/lib64/
 parts/
 sdist/
 var/
