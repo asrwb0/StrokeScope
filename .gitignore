@@ -216,3 +216,6 @@ heatmaps/
 # environment variables
 **/.env
 .env
+MVP/frontend/.dart_tool/
+MVP/frontend/build/
+.DS_Store
