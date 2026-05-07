@@ -65,7 +65,7 @@ async def analyze(request: Request, file: UploadFile = File(...)):
 
 @router.post("/feedback", response_model=FeedbackResponse)
 async def feedback(payload: FeedbackRequest):
-    print(f"[feedback] rating={payload.ease_of_use} comment={payload.comments!r}")
+    print(f"[feedback] role={payload.role} rating={payload.rating} area={payload.area} consent={payload.consentGiven} comment={payload.comments!r}")
     return FeedbackResponse(status="ok", message="Feedback received. Thank you!")
 
 
