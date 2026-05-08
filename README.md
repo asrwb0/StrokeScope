@@ -98,7 +98,7 @@ StrokeScope/
 │   │   └── data.py              # Dataset utilities for local retraining
 └── frontend/
     └── lib/
-│       └── main.dart            # Full Flutter app (3 pages)
+        └── main.dart            # Full Flutter app (3 pages)
 ├── .gitignore
 ├── LICENSE
 └── README.md
