@@ -6,7 +6,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:dio/dio.dart';
 
 // ── API base URL ───────────────────────────────────────────────────────────────
-const String _apiBase = 'http://localhost:8000';
+const String _apiBase = 'https://strokescope-production.up.railway.app';
 
 // ── Brand colors ───────────────────────────────────────────────────────────────
 const kMaroon      = Color(0xFF5A0F1C);
