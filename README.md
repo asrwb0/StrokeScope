@@ -81,25 +81,24 @@ The Flutter frontend uploads a CT scan to the FastAPI backend. The backend runs 
 
 ```
 StrokeScope/
-├── MVP/
-│   ├── backend/
-│   │   ├── main.py                  # FastAPI app, lifespan model loading
-│   │   ├── config.py                # Hyperparameters, paths, class names
-│   │   ├── requirements.txt
-│   │   ├── api/
-│   │   │   └── routes.py            # /analyze, /feedback, /health endpoints
-│   │   ├── functions/
-│   │   │   ├── model.py             # EfficientNet-B0 + binary head definition
-│   │   │   ├── predictor.py         # Preprocessing + inference wrapper
-│   │   │   ├── wrapper.py           # GPT-4.1-mini explanation layer
-│   │   │   └── gradcam.py           # Grad-CAM (roadmap)
-│   │   ├── health/
-│   │   │   └── schemas.py           # Pydantic response schemas
-│   │   └── data/
-│   │       └── data.py              # Dataset utilities for local retraining
-│   └── frontend/
-│       └── lib/
-│           └── main.dart            # Full Flutter app (3 pages)
+├── backend/
+│   ├── main.py                  # FastAPI app, lifespan model loading
+│   ├── config.py                # Hyperparameters, paths, class names
+│   ├── requirements.txt
+│   ├── api/
+│   │   └── routes.py            # /analyze, /feedback, /health endpoints
+│   ├── functions/
+│   │   ├── model.py             # EfficientNet-B0 + binary head definition
+│   │   ├── predictor.py         # Preprocessing + inference wrapper
+│   │   ├── wrapper.py           # GPT-4.1-mini explanation layer
+│   │   └── gradcam.py           # Grad-CAM (roadmap)
+│   ├── health/
+│   │   └── schemas.py           # Pydantic response schemas
+│   └── data/
+│   │   └── data.py              # Dataset utilities for local retraining
+└── frontend/
+    └── lib/
+│       └── main.dart            # Full Flutter app (3 pages)
 ├── .gitignore
 ├── LICENSE
 └── README.md
@@ -121,7 +120,7 @@ StrokeScope/
 
 ```bash
 git clone https://github.com/asrwb0/StrokeScope.git
-cd StrokeScope/MVP/backend
+cd StrokeScope/backend
 
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
@@ -131,9 +130,9 @@ pip install fastapi uvicorn[standard] python-multipart \
             pydantic openai python-dotenv
 ```
 
-Place your trained weights file at `MVP/backend/best_model.pth`.
+Place your trained weights file at `backend/best_model.pth`.
 
-Create `MVP/backend/.env`:
+Create `backend/.env`:
 ```
 OPENAI_API_KEY=sk-...
 ```
@@ -148,7 +147,7 @@ python main.py
 ### Frontend Setup
 
 ```bash
-cd MVP/frontend
+cd frontend
 flutter pub get
 flutter run -d chrome
 ```
@@ -334,7 +333,6 @@ StrokeScope was developed by high school students as part of a rigorous independ
 Throughout development, Claude played a significant role across the stack, assisting with backend implementation, PyTorch model integration, FastAPI patterns, frontend layout, and debugging. Claude was used heavily at times, particularly when implementation challenges fell outside the team's existing knowledge. In all cases, generated code was reviewed, tested, debugged, and deliberately modified by the student developers to fit the project's specific requirements.
 
 GitHub Copilot was used for quick fixes in syntax or inaccurate implementation of code. Copilot was occasionally used to generate code, but its primary function was to revise team-written code to ensure accuracy.
-
 
 ---
 
