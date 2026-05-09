@@ -873,6 +873,14 @@ class _StarRatingWidgetState extends State<StarRatingWidget> {
     rating = widget.initialRating;
   }
 
+  @override
+  void didUpdateWidget(StarRatingWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialRating != oldWidget.initialRating) {
+      setState(() => rating = widget.initialRating);
+    }
+  }
+
   Widget buildStar(BuildContext context, int index) {
     final icon = index < rating
         ? Icon(Icons.star, size: 24, color: widget.color)
