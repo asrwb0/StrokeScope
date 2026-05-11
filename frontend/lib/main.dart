@@ -139,7 +139,7 @@ class NavBar extends StatelessWidget {
             child: Image.asset('images/icon.png'),
           ),
           const Text(
-            'Stroke Scope',
+            'StrokeScope',
             style: TextStyle(
               color: kWhite,
               fontSize: 18,
@@ -252,7 +252,7 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'STROKE SCOPE',
+                      'STROKESCOPE',
                       style: GoogleFonts.bebasNeue(fontSize: 72, color: kMaroonDark, letterSpacing: 4),
                     ),
                     const SizedBox(height: 8),
@@ -321,7 +321,7 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   children: [
                     Text(
-                      'TRY STROKE SCOPE TODAY',
+                      'TRY STROKESCOPE TODAY',
                       style: GoogleFonts.bebasNeue(fontSize: 40, color: kWhite, letterSpacing: 2),
                     ),
                     const SizedBox(height: 8),
