@@ -20,7 +20,11 @@ CLASS_NAMES = ["Normal", "Stroke"]
 
 API_HOST    = "0.0.0.0"
 API_PORT    = 8000
-CORS_ORIGINS = ["*"]
+CORS_ORIGINS = [
+    "https://strokescope-sooty.vercel.app",
+    "http://localhost:5173",
+    "https://strokescope-production.up.railway.app",
+]
 
 DISCLAIMER = (
     "This result is not a medical diagnosis. "
